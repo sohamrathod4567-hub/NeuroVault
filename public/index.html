@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NeuroVault — AI Knowledge Base</title>
+  <meta name="description" content="NeuroVault: Your personal AI-powered knowledge base. Capture ideas, research, and notes securely." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+  <link rel="stylesheet" href="/css/main.css" />
+  <link rel="stylesheet" href="/css/auth.css" />
+</head>
+<body>
+  <div class="auth-page">
+    <div>
+      <!-- Logo -->
+      <div class="auth-logo">
+        <div class="logo-icon">🧠</div>
+        <div>
+          <span class="logo-text">NeuroVault</span>
+          <span class="logo-sub">AI Knowledge Base</span>
+        </div>
+      </div>
+
+      <!-- Card -->
+      <div class="glass-card auth-card">
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+          <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Create Account</button>
+        </div>
+
+        <!-- Login Form -->
+        <form class="auth-form active" id="form-login" onsubmit="handleLogin(event)">
+          <div>
+            <p class="form-title">Welcome back</p>
+            <p class="form-subtitle">Sign in to your knowledge base</p>
+          </div>
+
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input class="form-input" type="email" id="login-email"
+              placeholder="you@example.com" autocomplete="email" required />
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input class="form-input" type="password" id="login-password"
+              placeholder="••••••••" autocomplete="current-password" required />
+          </div>
+
+          <button type="submit" class="btn btn-primary submit-btn" id="login-submit">
+            Sign In
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form class="auth-form" id="form-register" onsubmit="handleRegister(event)">
+          <div>
+            <p class="form-title">Create your vault</p>
+            <p class="form-subtitle">Start capturing knowledge today</p>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-username">Username</label>
+            <input class="form-input" type="text" id="reg-username"
+              placeholder="yourname" autocomplete="username" required />
+          </div>
+
+          <div class="form-group">
+            <label for="reg-email">Email</label>
+            <input class="form-input" type="email" id="reg-email"
+              placeholder="you@example.com" autocomplete="email" required />
+          </div>
+
+          <div class="form-group">
+            <label for="reg-password">Password</label>
+            <input class="form-input" type="password" id="reg-password"
+              placeholder="Min. 6 characters" autocomplete="new-password" required minlength="6" />
+          </div>
+
+          <button type="submit" class="btn btn-primary submit-btn" id="register-submit">
+            Create Account
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/js/auth.js"></script>
+</body>
+</html>
