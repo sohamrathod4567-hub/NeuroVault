@@ -1,0 +1,113 @@
+/* =====================
+   KNOWLEDGE GRAPH STYLES
+   ===================== */
+
+.graph-view {
+  position: relative;
+  background: var(--bg-base);
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+#graph-container {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+#graph-container:active {
+  cursor: grabbing;
+}
+
+.graph-node {
+  stroke: var(--bg-base);
+  stroke-width: 1.5px;
+  transition: r 0.2s ease, stroke-width 0.2s ease;
+  cursor: pointer;
+}
+
+.graph-node:hover {
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.graph-link {
+  stroke: var(--border-strong);
+  stroke-opacity: 0.4;
+  stroke-width: 1.5px;
+  transition: stroke-opacity 0.2s ease;
+}
+
+.graph-label {
+  fill: var(--text-secondary);
+  font-size: 10px;
+  pointer-events: none;
+  font-family: var(--font-sans);
+  text-anchor: middle;
+  dominant-baseline: hanging;
+  transition: opacity 0.2s ease;
+}
+
+.node-group:hover .graph-label {
+  fill: var(--text-primary);
+  font-weight: 500;
+  font-size: 11px;
+}
+
+/* Colors by tag */
+.node-idea     { fill: #FACC15; }
+.node-research { fill: #22D3EE; }
+.node-document { fill: #7C5CFF; }
+.node-todo     { fill: #10B981; }
+.node-general  { fill: #9CA3AF; }
+
+/* Legend & Toolbar */
+.graph-toolbar {
+  position: absolute;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(12px);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-strong);
+  z-index: 100;
+}
+
+.graph-legend {
+  display: flex;
+  gap: var(--space-3);
+  padding-left: var(--space-4);
+  border-left: 1px solid var(--border-subtle);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot.idea     { background: #FACC15; }
+.dot.research { background: #22D3EE; }
+.dot.document { background: #7C5CFF; }
+
+.graph-reset-btn {
+  padding: 4px 12px;
+  font-size: 11px;
+}

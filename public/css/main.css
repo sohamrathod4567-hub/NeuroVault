@@ -64,9 +64,11 @@
   --topbar-height: 64px;
   
   /* Utilities */
-  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast: 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  --focus-ring: 0 0 0 4px var(--color-primary-dim);
 }
 
 /* =====================
@@ -93,12 +95,12 @@ body {
 }
 
 @keyframes pageFadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes viewFadeSlide {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -147,7 +149,7 @@ input, textarea {
   box-shadow: var(--shadow-lg);
 }
 
-/* Buttons */
+/* Buttons - Standardized Variants */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -156,23 +158,25 @@ input, textarea {
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   transition: all var(--transition-fast);
   white-space: nowrap;
   user-select: none;
-  transform: scale(1);
+  cursor: pointer;
+  border: 1px solid transparent;
 }
 
-.btn:active:not(:disabled), button:active:not(:disabled) {
+.btn:active:not(:disabled) {
   transform: scale(0.96);
 }
 
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  pointer-events: none;
+  filter: grayscale(0.5);
 }
 
+/* Primary: Main action */
 .btn-primary {
   background: var(--color-primary);
   color: #fff;
@@ -185,18 +189,9 @@ input, textarea {
   transform: translateY(-1px);
 }
 
-.btn-secondary {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-secondary:hover {
-  background: var(--border-strong);
-}
-
+/* Ghost: Low emphasis, borderless */
 .btn-ghost {
+  background: transparent;
   color: var(--text-secondary);
 }
 
@@ -205,31 +200,65 @@ input, textarea {
   color: var(--text-primary);
 }
 
+/* Subtle: Tinted background, medium emphasis */
+.btn-subtle {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.btn-subtle:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+/* Secondary: Outlined/Subdued */
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-hover);
+  border-color: var(--text-secondary);
+}
+
+/* Danger: Destructive actions */
 .btn-danger {
   background: rgba(239, 68, 68, 0.1);
   color: var(--error);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 .btn-danger:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: var(--error);
+  color: white;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
 }
 
-/* Form inputs */
+/* Sizes */
+.btn-sm { padding: var(--space-1) var(--space-3); font-size: 12px; height: 32px; }
+.btn-md { padding: var(--space-2) var(--space-4); font-size: 14px; height: 40px; }
+.btn-lg { padding: var(--space-3) var(--space-6); font-size: 16px; height: 48px; }
+
+/* Form inputs - Standardized */
 .form-group {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
 
-.form-group label {
+.form-label {
   font-size: var(--text-xs);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-secondary);
+  letter-spacing: 0.02em;
 }
 
 .form-input {
-  background: var(--bg-base);
+  background: var(--bg-surface);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   padding: var(--space-3);
@@ -239,14 +268,62 @@ input, textarea {
   width: 100%;
 }
 
-.form-input:hover {
-  border-color: rgba(255, 255, 255, 0.3);
+.form-input:hover:not(:focus) {
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .form-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-dim);
+  box-shadow: var(--focus-ring);
+  background: var(--bg-base);
+}
+
+.form-input.is-error {
+  border-color: var(--error);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.form-input.is-error:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+}
+
+.form-error-msg {
+  font-size: 11px;
+  color: var(--error);
+  margin-top: var(--space-1);
+}
+
+/* Cards - Standardized */
+.card {
   background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+}
+
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--border-strong);
+}
+
+.card-interactive:active {
+  transform: translateY(-1px) scale(0.98);
 }
 
 .form-input::placeholder {

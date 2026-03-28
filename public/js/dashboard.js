@@ -194,7 +194,7 @@ async function loadNotes() {
   const list = document.getElementById('notes-list');
   
   if (list) {
-    list.innerHTML = Array(4).fill().map(() => `
+    list.innerHTML = Array(6).fill().map(() => `
       <div class="skeleton-item">
         <div class="skeleton skel-title"></div>
         <div class="skeleton skel-line"></div>
@@ -203,8 +203,23 @@ async function loadNotes() {
     `).join('');
   }
 
+  const tagsList = document.getElementById('tag-filters');
+  if (tagsList) {
+    tagsList.innerHTML = Array(5).fill().map(() => `
+      <div class="skeleton skel-tag" style="margin-right: 4px;"></div>
+    `).join('');
+  }
+
+  const activityGrid = document.getElementById('recent-grid');
+  if (activityGrid) {
+    activityGrid.innerHTML = Array(4).fill().map(() => `
+      <div class="skeleton skel-card"></div>
+    `).join('');
+  }
+
   try {
     allNotes = await apiFetch('/api/notes');
+    renderTagFilters(); // New function to render tags after loading
     applyFilters();
   } catch (err) {
     if (list) {
@@ -278,6 +293,20 @@ function renderNotesList(notes) {
   });
 }
 
+function renderTagFilters() {
+  const container = document.getElementById('tag-filters');
+  if (!container) return;
+
+  const tags = ['all', 'idea', 'research', 'todo', 'document'];
+  container.innerHTML = tags.map(tag => `
+    <button class="tag-filter-btn${tag === currentTagFilter ? ' active' : ''}" 
+            data-tag="${tag}" 
+            onclick="filterByTag('${tag}')">
+      ${tag.charAt(0).toUpperCase() + tag.slice(1)}
+    </button>
+  `).join('');
+}
+
 function filterByTag(tag) {
   currentTagFilter = tag;
   const searchInput = document.getElementById('search-input');
@@ -322,7 +351,7 @@ function renderRecentActivity() {
   const recent = allNotes.slice(0, 4);
   
   grid.innerHTML = recent.map(n => `
-    <div class="recent-card" onclick="openNote(${n.id})">
+    <div class="card card-interactive recent-card" onclick="openNote(${n.id})">
       <div class="recent-card-title">
         <span class="note-icon">${getTagIcon(n.tag)}</span>
         <span>${escHtml(n.title || 'Untitled')}</span>

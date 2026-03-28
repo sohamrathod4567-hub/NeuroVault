@@ -309,7 +309,8 @@ body.resizing .dashboard-layout {
 
 .note-item:hover {
   background: var(--bg-elevated);
-  transform: translateX(4px);
+  transform: translateX(6px);
+  box-shadow: var(--shadow-sm);
 }
 
 .note-item:active {
@@ -469,24 +470,7 @@ body.resizing .dashboard-layout {
   background: rgba(31, 41, 55, 0.4);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border-subtle);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  cursor: pointer;
-  transition: all var(--transition);
-  box-shadow: var(--shadow-sm);
-  user-select: none;
-}
-
-.action-card:hover {
-  background: var(--bg-elevated);
-  transform: translateY(-4px);
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-md), 0 0 0 2px var(--color-primary-dim);
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 .action-card:active {
@@ -541,23 +525,7 @@ body.resizing .dashboard-layout {
 }
 
 .recent-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
   padding: var(--space-3);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  user-select: none;
-}
-
-.recent-card:hover {
-  background: var(--bg-elevated);
-  transform: translateY(-2px);
-  border-color: var(--border-strong);
-}
-
-.recent-card:active {
-  transform: scale(0.98);
 }
 /* =====================
    LOADING SKELETONS
@@ -572,9 +540,13 @@ body.resizing .dashboard-layout {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--bg-hover) 50%, var(--bg-elevated) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
+  background: linear-gradient(90deg, 
+    rgba(255, 255, 255, 0.03) 25%, 
+    rgba(255, 255, 255, 0.08) 37%, 
+    rgba(255, 255, 255, 0.03) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
   border-radius: var(--radius-sm);
 }
 
@@ -583,9 +555,12 @@ body.resizing .dashboard-layout {
   100% { background-position: 200% 0; }
 }
 
-.skel-title { height: 14px; width: 70%; }
-.skel-line { height: 10px; width: 100%; }
-.skel-line-short { height: 10px; width: 80%; }
+.skel-title { height: 14px; width: 70%; margin-bottom: 4px; }
+.skel-line { height: 10px; width: 100%; margin-bottom: 2px; }
+.skel-line-short { height: 10px; width: 40%; }
+.skel-tag { height: 18px; width: 50px; border-radius: var(--radius-full); display: inline-block; }
+.skel-card { height: 60px; width: 100%; border-radius: var(--radius-md); }
+.skel-circle { width: 24px; height: 24px; border-radius: var(--radius-full); flex-shrink: 0; }
 .recent-card-title {
   font-size: 13px;
   font-weight: 600;

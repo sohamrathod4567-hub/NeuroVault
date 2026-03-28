@@ -16,21 +16,29 @@ function switchView(view) {
 
   const notesView = document.getElementById('view-notes');
   const chatView  = document.getElementById('view-chat');
+  const graphView = document.getElementById('view-graph');
+  
   const noteBtn   = document.getElementById('view-notes-btn');
   const chatBtn   = document.getElementById('view-chat-btn');
+  const graphBtn  = document.getElementById('view-graph-btn');
   
   const insightsNote = document.getElementById('insights-content-note');
   const insightsChat = document.getElementById('insights-content-chat');
   const btnDelete = document.getElementById('delete-btn');
   const btnSave = document.getElementById('save-btn');
 
+  // Hide all
+  notesView.style.display = 'none';
+  chatView.style.display  = 'none';
+  graphView.style.display = 'none';
+  noteBtn.classList.remove('active');
+  chatBtn.classList.remove('active');
+  graphBtn.classList.remove('active');
+
   if (view === 'chat') {
-    notesView.style.display = 'none';
     chatView.style.display  = 'flex';
-    noteBtn.classList.remove('active');
     chatBtn.classList.add('active');
     
-    // Insights
     if (insightsNote) insightsNote.style.display = 'none';
     if (insightsChat) insightsChat.style.display = 'flex';
     if (btnDelete) btnDelete.style.display = 'none';
@@ -38,15 +46,22 @@ function switchView(view) {
 
     updateNoteCount();
     setTimeout(() => document.getElementById('chat-input')?.focus(), 50);
+  } else if (view === 'graph') {
+    graphView.style.display = 'flex';
+    graphBtn.classList.add('active');
+    
+    if (insightsNote) insightsNote.style.display = 'none';
+    if (insightsChat) insightsChat.style.display = 'none';
+    if (btnDelete) btnDelete.style.display = 'none';
+    if (btnSave) btnSave.style.display = 'none';
+
+    // Trigger graph fetch and render
+    if (window.initGraph) window.initGraph();
   } else {
-    chatView.style.display  = 'none';
     notesView.style.display = 'flex';
-    chatBtn.classList.remove('active');
     noteBtn.classList.add('active');
     
-    // Insights
     if (insightsChat) insightsChat.style.display = 'none';
-    // activeNoteId dictates Note Insights visibility
     if (typeof activeNoteId !== 'undefined' && activeNoteId !== null) {
       if (insightsNote) insightsNote.style.display = 'flex';
       if (btnDelete) btnDelete.style.display = 'block';
@@ -270,10 +285,11 @@ function showTypingIndicator() {
   el.id = 'typing-indicator';
   el.innerHTML = `
     <div class="msg-avatar ai-av pulse-logo">✨</div>
-    <div class="message-content-wrapper">
-      <div class="typing-bubble">
-        <span class="thinking-text">AI is thinking</span>
-        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+    <div class="message-content-wrapper w-full">
+      <div class="chat-skeleton-wrapper">
+        <div class="skeleton chat-skeleton-line mid"></div>
+        <div class="skeleton chat-skeleton-line"></div>
+        <div class="skeleton chat-skeleton-line short"></div>
       </div>
     </div>`;
   container.appendChild(el);
