@@ -27,8 +27,13 @@ CRITICAL RULES PREVENTING HALLUCINATIONS:
 1. Answer ONLY using the provided context. Absolutely NO outside knowledge is permitted.
 2. If the answer is not explicitly contained within the provided context, you MUST reply exactly with: "I couldn't find relevant information in your notes."
 3. Do not infer, guess, or extrapolate beyond what is explicitly written in the notes.
-4. Always cite the note title or number when providing information.
+4. Always cite the note title or number when providing information. Use the format [1], [2] corresponding to Note 1, Note 2 etc.
 5. Provide a concise, helpful answer formatted in markdown.
+6. At the very end of your response, you MUST provide exactly 3 follow-up questions the user could ask based on the context. Format them precisely like this:
+---FOLLOWUPS---
+1. [First follow-up question?]
+2. [Second follow-up question?]
+3. [Third follow-up question?]
 
 === PROVIDED CONTEXT (NOTES) ===
 ${context}
@@ -120,6 +125,72 @@ router.post('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+/**
+ * POST /api/chat/action
+ * Body: { action: 'expand'|'simplify'|'summarize', text: string }
+ */
+router.post('/action', async (req, res) => {
+  const { action, text } = req.body;
+  if (!text || !action) return res.status(400).json({ error: 'Text and action are required' });
+
+  let prompt = '';
+  switch(action) {
+    case 'expand': prompt = `Expand on the following text, providing more detail and explanation. Format in markdown:\n\n${text}`; break;
+    case 'simplify': prompt = `Simplify the following text so it is easier to understand. Format in markdown:\n\n${text}`; break;
+    case 'summarize': prompt = `Summarize the following text briefly. Format in markdown:\n\n${text}`; break;
+    default: return res.status(400).json({ error: 'Invalid action' });
+  }
+
+  try {
+    const response = await fetch('https://text.pollinations.ai/openai/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'openai', 
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3, max_tokens: 1024
+      })
+    });
+    const data = await response.json();
+    const answer = data.choices[0]?.message?.content?.trim() || '';
+    res.json({ answer });
+  } catch (err) {
+    res.status(500).json({ error: 'Action failed.' });
+  }
+});
+
+/**
+ * POST /api/chat/inline
+ * Body: { action: 'improve'|'summarize'|'explain', text: string }
+ */
+router.post('/inline', async (req, res) => {
+  const { action, text } = req.body;
+  if (!text || !action) return res.status(400).json({ error: 'Text and action are required' });
+
+  let prompt = '';
+  switch(action) {
+    case 'improve': prompt = `Improve the writing of the following text while keeping its original meaning and tone. Return ONLY the improved text, no conversational filler:\n\n${text}`; break;
+    case 'summarize': prompt = `Summarize the following text concisely. Return ONLY the summary, no conversational filler:\n\n${text}`; break;
+    case 'explain': prompt = `Explain the following text in simple terms:\n\n${text}`; break;
+    default: return res.status(400).json({ error: 'Invalid action' });
+  }
+
+  try {
+    const response = await fetch('https://text.pollinations.ai/openai/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'openai', 
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.2, max_tokens: 1024
+      })
+    });
+    const data = await response.json();
+    const answer = data.choices[0]?.message?.content?.trim() || '';
+    res.json({ answer });
+  } catch (err) {
+    res.status(500).json({ error: 'Inline AI failed.' });
+  }
+});
 
 module.exports = router;

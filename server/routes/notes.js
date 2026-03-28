@@ -35,20 +35,13 @@ function deserializeNote(note) {
 
 // GET /api/notes — all notes for the logged-in user
 router.get('/', (req, res) => {
-  console.log('[GET /api/notes] User ID:', req.user ? req.user.id : 'undefined');
   try {
     const notes = db.prepare(
       'SELECT * FROM notes WHERE user_id = ? ORDER BY updated_at DESC'
     ).all(req.user.id);
-    console.log(`[GET /api/notes] Found ${notes.length} notes`);
-    
-    const serialized = notes.map(deserializeNote);
-    console.log('[GET /api/notes] Serialization successful');
-    
-    res.json(serialized);
+    res.json(notes.map(deserializeNote));
   } catch (err) {
-    console.error('[GET /api/notes] ERROR:', err.message);
-    console.error(err.stack);
+    console.error('[notes] GET / error:', err.message);
     res.status(500).json({ error: 'Failed to fetch notes' });
   }
 });

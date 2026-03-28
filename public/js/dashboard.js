@@ -71,12 +71,25 @@ if (!token || !userRaw) {
 const user = JSON.parse(userRaw);
 
 // ---- Init ----
+let sidebarOpen = true;
+
 document.addEventListener('DOMContentLoaded', () => {
   initResizers(); // Initialize draggable panels
   initUserBadge();
   initGreeting();
   loadNotes();
 });
+
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  const layout = document.querySelector('.dashboard-layout');
+  if (!sidebarOpen) {
+    layout.style.setProperty('--sidebar-width', '0px');
+  } else {
+    const savedSidebar = localStorage.getItem('nv_width_sidebar') || 280;
+    layout.style.setProperty('--sidebar-width', savedSidebar + 'px');
+  }
+}
 
 function initResizers() {
   const layout = document.querySelector('.dashboard-layout');
@@ -734,4 +747,121 @@ function formatDate(dateStr) {
   if (diff < 86400 * 7)  return `${Math.floor(diff / 86400)}d ago`;
 
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/* ================================
+   INLINE AI EDITOR FEATURE
+   ================================ */
+let inlineSelectionText = '';
+let aiToolbarEl = null;
+let aiResultPopoverEl = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const editorPath = document.getElementById('note-content');
+  if (!editorPath) return;
+
+  // Add the toolbar element
+  aiToolbarEl = document.createElement('div');
+  aiToolbarEl.className = 'inline-ai-toolbar';
+  aiToolbarEl.style.display = 'none';
+  aiToolbarEl.innerHTML = `
+    <button onclick="handleInlineAi('improve')">✨ Improve</button>
+    <button onclick="handleInlineAi('summarize')">📝 Summarize</button>
+    <button onclick="handleInlineAi('explain')">💡 Explain</button>
+  `;
+  document.body.appendChild(aiToolbarEl);
+
+  // Add the result popover element
+  aiResultPopoverEl = document.createElement('div');
+  aiResultPopoverEl.className = 'inline-ai-result-popover';
+  aiResultPopoverEl.style.display = 'none';
+  aiResultPopoverEl.innerHTML = `
+    <div class="result-body" id="inline-ai-result-text"></div>
+    <div class="result-actions">
+      <button class="btn-primary-sm" onclick="applyInlineAiResult()">Replace Selection</button>
+      <button class="btn-secondary-sm" onclick="closeInlineAiResult()">Cancel</button>
+    </div>
+  `;
+  document.body.appendChild(aiResultPopoverEl);
+
+  editorPath.addEventListener('mouseup', checkSelection);
+  editorPath.addEventListener('keyup', checkSelection);
+  
+  // click outside to close
+  document.addEventListener('mousedown', (e) => {
+    if (aiToolbarEl && aiToolbarEl.style.display === 'flex' && !aiToolbarEl.contains(e.target) && e.target !== editorPath) {
+      aiToolbarEl.style.display = 'none';
+    }
+  });
+});
+
+function checkSelection(e) {
+  const elem = e.target;
+  const start = elem.selectionStart;
+  const end = elem.selectionEnd;
+
+  if (start !== end) {
+    const text = elem.value.substring(start, end);
+    if (text.trim().length > 5) {
+      inlineSelectionText = text;
+      // Get rough coordinates from text area
+      const rect = elem.getBoundingClientRect();
+      aiToolbarEl.style.left = (rect.left + rect.width / 2 - 120) + 'px';
+      aiToolbarEl.style.top = (rect.top + 10) + 'px';
+      aiToolbarEl.style.display = 'flex';
+      return;
+    }
+  }
+  
+  // Hide if no selection
+  if (aiToolbarEl) aiToolbarEl.style.display = 'none';
+}
+
+async function handleInlineAi(action) {
+  aiToolbarEl.style.display = 'none';
+  if (!inlineSelectionText) return;
+
+  // Show loading
+  aiResultPopoverEl.style.display = 'flex';
+  aiResultPopoverEl.style.left = aiToolbarEl.style.left;
+  aiResultPopoverEl.style.top = aiToolbarEl.style.top;
+  document.getElementById('inline-ai-result-text').innerHTML = '<span class="loading-pulse">Thinking...</span>';
+
+  try {
+    const res = await fetch('/api/chat/inline', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ action, text: inlineSelectionText })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    document.getElementById('inline-ai-result-text').innerHTML = String(data.answer).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\\n/g, '<br/>');
+    // Store it globally to apply later
+    aiResultPopoverEl.dataset.result = data.answer;
+  } catch (err) {
+    document.getElementById('inline-ai-result-text').innerHTML = '<span class="error-text">Failed to generate AI response.</span>';
+  }
+}
+
+function applyInlineAiResult() {
+  const result = aiResultPopoverEl.dataset.result;
+  const elem = document.getElementById('note-content');
+  if (!elem || !result) return;
+
+  const start = elem.selectionStart;
+  const end = elem.selectionEnd;
+  
+  const val = elem.value;
+  elem.value = val.substring(0, start) + result + val.substring(end);
+  
+  closeInlineAiResult();
+  markUnsaved();
+}
+
+function closeInlineAiResult() {
+  if (aiResultPopoverEl) {
+    aiResultPopoverEl.style.display = 'none';
+    aiResultPopoverEl.dataset.result = '';
+  }
 }

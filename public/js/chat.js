@@ -129,8 +129,10 @@ async function submitChat() {
   autoresizeTextarea(input);
 
   // Hide welcome, show clear button
-  document.getElementById('chat-welcome').style.display   = 'none';
-  document.getElementById('clear-chat-btn').style.display = 'flex';
+  const welcome = document.getElementById('chat-welcome');
+  if (welcome) welcome.style.display = 'none';
+  const clearBtn = document.getElementById('clear-chat-btn');
+  if (clearBtn) clearBtn.style.display = 'flex';
 
   // Render user bubble
   appendMessage({ role: 'user', content: question });
@@ -160,10 +162,12 @@ async function submitChat() {
 /* ================================
    MESSAGE RENDERING
    ================================ */
-function appendMessage({ role, content, sources, error }) {
+function appendMessage({ role, content, sources, error, id }) {
   const container = document.getElementById('chat-messages');
   const wrap = document.createElement('div');
   wrap.className = `chat-message ${role}`;
+  const msgId = id || 'msg_' + Date.now();
+  wrap.id = msgId;
 
   let html = '';
   
@@ -173,11 +177,20 @@ function appendMessage({ role, content, sources, error }) {
         <div class="message-bubble${error ? ' error' : ''}">${escChatHtml(content)}</div>
       </div>`;
   } else {
+    let mainContent = content;
+    let followups = [];
+    if (content && typeof content === 'string' && content.includes('---FOLLOWUPS---')) {
+      const parts = content.split('---FOLLOWUPS---');
+      mainContent = parts[0].trim();
+      const fwText = parts[1].trim();
+      followups = fwText.split('\n').map(l => l.replace(/^\d+\.\s*/, '').trim()).filter(l => l);
+    }
+
     html = `
       <div class="msg-avatar ai-av">✨</div>
       <div class="message-content-wrapper w-full">
-        <div class="message-bubble${error ? ' error' : ''}">
-          ${markdownToHtml(content)}
+        <div class="message-bubble${error ? ' error' : ''}" id="bubble_${msgId}">
+          ${markdownToHtml(mainContent)}
         </div>`;
 
     if (sources && sources.length > 0) {
@@ -192,6 +205,23 @@ function appendMessage({ role, content, sources, error }) {
           </div>
         </div>`;
     }
+
+    if (!error && mainContent) {
+      html += `
+        <div class="ai-actions">
+          <button class="ai-action-btn" onclick="handleChatAction('expand', '${msgId}')">✨ Expand</button>
+          <button class="ai-action-btn" onclick="handleChatAction('simplify', '${msgId}')">🎯 Simplify</button>
+          <button class="ai-action-btn" onclick="handleChatAction('summarize', '${msgId}')">📝 Summarize</button>
+        </div>`;
+    }
+
+    if (followups.length > 0) {
+      html += `
+        <div class="followup-suggestions">
+          ${followups.map(f => `<button class="followup-chip" onclick="useSuggestedQuestion(this.dataset.q)" data-q="${escChatHtml(f)}">${escChatHtml(f)}</button>`).join('')}
+        </div>`;
+    }
+
     html += `</div>`;
   }
 
@@ -200,6 +230,34 @@ function appendMessage({ role, content, sources, error }) {
   
   // Smooth auto-scroll
   wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+/* ================================
+   MESSAGE ACTIONS
+   ================================ */
+async function handleChatAction(action, msgId) {
+  if (isChatLoading) return;
+  const bubble = document.getElementById(`bubble_${msgId}`);
+  if (!bubble) return;
+  
+  const text = bubble.innerText;
+  
+  const typing = showTypingIndicator();
+  isChatLoading = true;
+  setSendDisabled(true);
+
+  try {
+    const data = await chatFetch('/api/chat/action', { action, text });
+    hideTypingIndicator(typing);
+    chatHistory.push({ role: 'assistant', content: data.answer });
+    appendMessage({ role: 'assistant', content: data.answer });
+  } catch (err) {
+    hideTypingIndicator(typing);
+    appendMessage({ role: 'assistant', content: err.message, error: true });
+  } finally {
+    isChatLoading = false;
+    setSendDisabled(false);
+  }
 }
 
 /* ================================
@@ -241,8 +299,8 @@ function clearChat() {
     if (child !== welcome) child.remove();
   });
 
-  welcome.style.display = 'flex';
-  clearBtn.style.display = 'none';
+  if (welcome) welcome.style.display = 'flex';
+  if (clearBtn) clearBtn.style.display = 'none';
 }
 
 /* ================================
@@ -313,6 +371,9 @@ function markdownToHtml(md) {
     if (para.startsWith('<')) return para;
     return `<p>${para.replace(/\n/g, '<br>')}</p>`;
   }).join('');
+
+  // Citations [1], [2]
+  html = html.replace(/\[(\d+)\]/g, '<span class="cite-badge">$1</span>');
 
   return html;
 }

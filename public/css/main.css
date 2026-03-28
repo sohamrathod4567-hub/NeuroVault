@@ -97,6 +97,15 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes viewFadeSlide {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.view-animate {
+  animation: viewFadeSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 body.resizing {
   user-select: none !important;
   cursor: col-resize !important;
@@ -151,9 +160,10 @@ input, textarea {
   transition: all var(--transition-fast);
   white-space: nowrap;
   user-select: none;
+  transform: scale(1);
 }
 
-.btn:active:not(:disabled) {
+.btn:active:not(:disabled), button:active:not(:disabled) {
   transform: scale(0.96);
 }
 
