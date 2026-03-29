@@ -33,29 +33,26 @@ if (uploadPdfBtn && pdfFileInput) {
     const formData = new FormData();
     formData.append('pdf', file);
 
-    const originalHTML = uploadPdfBtn.innerHTML;
-    uploadPdfBtn.innerHTML = 'Processing...';
-    uploadPdfBtn.disabled = true;
-
+    const loadingToast = showToast('Uploading and processing PDF...', 'loading', 0);
     try {
-      const res = await fetch(`/api/documents/upload`, { // Assuming API_BASE is not defined, using relative path
+      const res = await fetch(`/api/documents/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         },
-        body: formData // Note: Content-Type is set automatically for FormData
+        body: formData
       });
 
       const data = await res.json();
       if (res.ok) {
-        showToast(data.message || 'PDF processed successfully', 'success');
-        await loadNotes(); // Reload the UI so new chunks show up
+        updateToast(loadingToast, data.message || 'PDF processed successfully', 'success');
+        await loadNotes();
       } else {
-        showToast(data.error || 'Failed to upload PDF', 'error');
+        updateToast(loadingToast, data.error || 'Failed to upload PDF', 'error');
       }
     } catch (err) {
       console.error(err);
-      showToast('A network error occurred while uploading', 'error');
+      updateToast(loadingToast, 'A network error occurred while uploading', 'error');
     } finally {
       uploadPdfBtn.innerHTML = originalHTML;
       uploadPdfBtn.disabled = false;
@@ -498,6 +495,7 @@ function updateWordCount() {
    CREATE NOTE
    ================================ */
 async function createNewNote() {
+  const nt = showToast('Creating new note...', 'loading', 0);
   try {
     const note = await apiFetch('/api/notes', {
       method: 'POST',
@@ -506,11 +504,10 @@ async function createNewNote() {
     allNotes.unshift(note);
     applyFilters();
     openNote(note.id);
-    // Focus title
     setTimeout(() => document.getElementById('note-title').focus(), 50);
-    showToast('New note created', 'success');
+    updateToast(nt, 'New note created', 'success');
   } catch (err) {
-    showToast(err.message, 'error');
+    updateToast(nt, err.message, 'error');
   }
 }
 
@@ -524,9 +521,7 @@ async function saveNote() {
   const content = document.getElementById('note-content').value;
   const tag     = document.getElementById('note-tag-select').value;
 
-  const saveBtn = document.getElementById('save-btn');
-  saveBtn.disabled = true;
-
+  const st = showToast('Saving note...', 'loading', 0);
   try {
     const updated = await apiFetch(`/api/notes/${activeNoteId}`, {
       method: 'PUT',
@@ -544,9 +539,9 @@ async function saveNote() {
     });
 
     markSaved();
-    showToast('Note saved ✓', 'success');
+    updateToast(st, 'Note saved ✓', 'success');
   } catch (err) {
-    showToast(err.message, 'error');
+    updateToast(st, err.message, 'error');
   } finally {
     saveBtn.disabled = false;
   }
@@ -559,6 +554,7 @@ async function deleteNote() {
   if (!activeNoteId) return;
   if (!confirm('Delete this note? This cannot be undone.')) return;
 
+  const dt = showToast('Deleting note...', 'loading', 0);
   try {
     await apiFetch(`/api/notes/${activeNoteId}`, { method: 'DELETE' });
 
@@ -567,9 +563,9 @@ async function deleteNote() {
 
     applyFilters();
     showWelcome();
-    showToast('Note deleted', 'info');
+    updateToast(dt, 'Note deleted', 'info');
   } catch (err) {
-    showToast(err.message, 'error');
+    updateToast(dt, err.message, 'error');
   }
 }
 
@@ -741,17 +737,58 @@ function handleLogout() {
 /* ================================
    TOAST
    ================================ */
-function showToast(message, type = 'info') {
+function showToast(message, type = 'info', duration = 3000) {
   const container = document.getElementById('toast-container');
-  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  if (!container) return null;
 
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.innerHTML = `<span>${icons[type]}</span><span>${message}</span>`;
+  
+  const icon = {
+    success: '✓',
+    error: '✕',
+    info: 'ℹ',
+    loading: '<div class="spinner-toast"></div>'
+  }[type] || 'ℹ';
+
+  toast.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div class="toast-content">${message}</div>
+  `;
+  
   container.appendChild(toast);
 
-  setTimeout(() => toast.remove(), 3000);
+  if (duration > 0) {
+    setTimeout(() => dismissToast(toast), duration);
+  }
+
+  return toast;
 }
+
+function updateToast(toast, message, type, duration = 3000) {
+  if (!toast) return;
+  toast.className = `toast ${type}`;
+  const icon = {
+    success: '✓',
+    error: '✕',
+    info: 'ℹ',
+    loading: '<div class="spinner-toast"></div>'
+  }[type] || 'ℹ';
+  
+  toast.querySelector('.toast-icon').innerHTML = icon;
+  toast.querySelector('.toast-content').textContent = message;
+
+  if (duration > 0) {
+    setTimeout(() => dismissToast(toast), duration);
+  }
+}
+
+function dismissToast(toast) {
+  if (!toast || !toast.parentNode) return;
+  toast.classList.add('removing');
+  setTimeout(() => toast.remove(), 300);
+}
+
 
 /* ================================
    UTILITIES

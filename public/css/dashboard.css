@@ -4,16 +4,16 @@
 
 .dashboard-layout {
   display: grid;
-  grid-template-columns: var(--sidebar-width, 260px) 2px 1fr 2px var(--insights-width, 250px);
-  grid-template-rows: 56px 1fr;
+  grid-template-columns: var(--sidebar-width, 280px) 2px 1fr 2px var(--insights-width, 250px);
+  grid-template-rows: 64px 1fr;
   grid-template-areas:
     "topbar topbar topbar topbar topbar"
     "sidebar resizer-l main resizer-r insights";
   height: 100vh;
   width: 100vw;
   overflow: hidden;
-  background: radial-gradient(circle at top right, rgba(124, 92, 255, 0.08) 0%, var(--bg-surface) 60%), radial-gradient(circle at bottom left, rgba(124, 92, 255, 0.05) 0%, var(--bg-surface) 50%);
-  transition: grid-template-columns var(--transition-slow);
+  background: var(--bg-base);
+  transition: grid-template-columns var(--transition);
 }
 
 body.resizing .dashboard-layout {
@@ -110,17 +110,19 @@ body.resizing .dashboard-layout {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
   color: var(--text-secondary);
   transition: all var(--transition);
   background: transparent;
+  border: 1px solid transparent;
 }
 
 .logout-btn:hover {
   color: var(--error);
   background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 /* ---- LEFT SIDEBAR ---- */
@@ -169,8 +171,8 @@ body.resizing .dashboard-layout {
 
 .sidebar-actions {
   display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .sidebar-actions .btn {
@@ -298,19 +300,23 @@ body.resizing .dashboard-layout {
 }
 
 .note-item {
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition);
   background: transparent;
   transform-origin: center;
   user-select: none;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
 }
 
 .note-item:hover {
-  background: var(--bg-elevated);
-  transform: translateX(6px);
-  box-shadow: var(--shadow-sm);
+  background: var(--bg-surface);
+  border-color: var(--border-subtle);
+  transform: translateX(4px);
 }
 
 .note-item:active {
@@ -319,7 +325,8 @@ body.resizing .dashboard-layout {
 
 .note-item.active {
   background: var(--bg-elevated);
-  box-shadow: inset 4px 0 0 0 var(--color-primary);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
 }
 
 .note-item-header {
@@ -415,15 +422,14 @@ body.resizing .dashboard-layout {
 
 .home-glow {
   position: absolute;
-  top: 5%;
+  top: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 600px;
-  height: 400px;
+  width: 100%;
+  height: 100%;
   background: 
-    radial-gradient(circle at 30% 30%, rgba(124, 92, 255, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 70% 60%, rgba(34, 211, 238, 0.1) 0%, transparent 50%);
-  filter: blur(60px);
+    radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.1) 0%, transparent 70%),
+    radial-gradient(circle at 100% 100%, rgba(34, 211, 238, 0.05) 0%, transparent 50%);
   z-index: 0;
   pointer-events: none;
 }
@@ -540,9 +546,10 @@ body.resizing .dashboard-layout {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, 
-    rgba(255, 255, 255, 0.03) 25%, 
-    rgba(255, 255, 255, 0.08) 37%, 
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 37%,
     rgba(255, 255, 255, 0.03) 63%
   );
   background-size: 400% 100%;
@@ -551,8 +558,8 @@ body.resizing .dashboard-layout {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
 }
 
 .skel-title { height: 14px; width: 70%; margin-bottom: 4px; }

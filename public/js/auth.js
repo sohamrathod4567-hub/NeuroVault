@@ -30,19 +30,40 @@ function switchTab(tab) {
 }
 
 /* -------- Toast notifications -------- */
-function showToast(message, type = 'info') {
+function showToast(message, type = 'info', duration = 3000) {
   const container = document.getElementById('toast-container');
-  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  if (!container) return null;
 
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.innerHTML = `<span>${icons[type]}</span><span>${message}</span>`;
+  
+  const icon = {
+    success: '✓',
+    error: '✕',
+    info: 'ℹ',
+    loading: '<div class="spinner-toast"></div>'
+  }[type] || 'ℹ';
+
+  toast.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div class="toast-content">${message}</div>
+  `;
+  
   container.appendChild(toast);
 
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
+  if (duration > 0) {
+    setTimeout(() => dismissToast(toast), duration);
+  }
+
+  return toast;
 }
+
+function dismissToast(toast) {
+  if (!toast || !toast.parentNode) return;
+  toast.classList.add('removing');
+  setTimeout(() => toast.remove(), 300);
+}
+
 
 /* -------- Set loading state -------- */
 function setLoading(btnId, loading) {
