@@ -95,7 +95,7 @@ router.post('/', async (req, res) => {
     // 4. Call Free Pollinations.ai API
     const systemPrompt = buildSystemPrompt(notesWithScore);
     
-    const response = await fetch('https://text.pollinations.ai/openai/chat/completions', {
+    const response = await fetch('https://text.pollinations.ai/openai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -105,7 +105,8 @@ router.post('/', async (req, res) => {
           { role: 'user', content: question.trim() }
         ],
         temperature: 0.1, 
-        max_tokens: 1024
+        max_tokens: 1024,
+        stream: false
       })
     });
 
@@ -142,13 +143,15 @@ router.post('/action', async (req, res) => {
   }
 
   try {
-    const response = await fetch('https://text.pollinations.ai/openai/chat/completions', {
+    const response = await fetch('https://text.pollinations.ai/openai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'openai', 
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3, max_tokens: 1024
+        temperature: 0.3, 
+        max_tokens: 1024,
+        stream: false
       })
     });
     const data = await response.json();
@@ -176,13 +179,15 @@ router.post('/inline', async (req, res) => {
   }
 
   try {
-    const response = await fetch('https://text.pollinations.ai/openai/chat/completions', {
+    const response = await fetch('https://text.pollinations.ai/openai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'openai', 
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2, max_tokens: 1024
+        temperature: 0.2, 
+        max_tokens: 1024,
+        stream: false
       })
     });
     const data = await response.json();
