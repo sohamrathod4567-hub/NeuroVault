@@ -243,8 +243,25 @@ function appendMessage({ role, content, sources, error, id }) {
   wrap.innerHTML = html;
   container.appendChild(wrap);
   
-  // Smooth auto-scroll
-  wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  // Smooth auto-scroll with a slight delay for image/content rendering
+  setTimeout(() => {
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: 'smooth'
+    });
+  }, 50);
+}
+
+/**
+ * Scroll to a specific source in the sidebar
+ */
+function scrollToSource(index) {
+  const sources = document.querySelectorAll('.source-chip');
+  if (sources[index - 1]) {
+    sources[index - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    sources[index - 1].classList.add('highlight-pulse');
+    setTimeout(() => sources[index - 1].classList.remove('highlight-pulse'), 2000);
+  }
 }
 
 /* ================================
@@ -357,39 +374,41 @@ function escChatHtml(str) {
 
 /**
  * Minimal Markdown → HTML renderer for assistant messages.
- * Handles: **bold**, *italic*, `code`, - lists.
+ * Handles: **bold**, *italic*, `code`, ```code blocks```, - lists.
  */
 function markdownToHtml(md) {
   if (!md) return '';
 
-  // Escape HTML first
-  let html = md
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  let html = md.trim();
 
-  // Bold + italic
+  // 1. Code blocks (```code```)
+  html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+    return `<pre class="code-block"><code>${escChatHtml(code.trim())}</code></pre>`;
+  });
+
+  // 2. Bold + italic
   html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-  // Inline code
+  // 3. Inline code
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-  // Lists
+  // 4. Citations [1], [2]
+  html = html.replace(/\[(\d+)\]/g, '<span class="cite-badge" onclick="scrollToSource($1)">$1</span>');
+
+  // 5. Lists (simple)
   html = html.replace(/^[-*•] (.+)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
 
-  // Paragraphs
-  html = html.split(/\n\n/).map(para => {
-    para = para.trim();
-    if (!para) return '';
-    if (para.startsWith('<')) return para;
-    return `<p>${para.replace(/\n/g, '<br>')}</p>`;
+  // 6. Paragraphs (split by double newlines, but skip code blocks/lists)
+  const paragraphs = html.split(/\n\n+/);
+  html = paragraphs.map(p => {
+    p = p.trim();
+    if (!p) return '';
+    if (p.startsWith('<pre') || p.startsWith('<ul') || p.startsWith('<li')) return p;
+    return `<p>${p.replace(/\n/g, '<br>')}</p>`;
   }).join('');
-
-  // Citations [1], [2]
-  html = html.replace(/\[(\d+)\]/g, '<span class="cite-badge">$1</span>');
 
   return html;
 }
