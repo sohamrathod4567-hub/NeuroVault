@@ -1,28 +1,42 @@
 'use strict';
 const { chatCompletion } = require('./server/services/aiProvider');
 
-async function testAI() {
-  console.log('Testing non-streaming completion...');
-  const response = await chatCompletion({
-    messages: [{ role: 'user', content: 'Hello, how are you?' }],
-    stream: false
-  });
-  console.log('Response:', response);
+async function testOllama() {
+  console.log('--- Testing Ollama Integration ---');
+  
+  try {
+    console.log('\n[Test 1] Non-streaming completion...');
+    const response = await chatCompletion({
+      messages: [{ role: 'user', content: 'Say "Ollama is ready" if you can hear me.' }],
+      stream: false
+    });
+    console.log('Response:', response);
 
-  console.log('\nTesting streaming completion...');
-  const stream = await chatCompletion({
-    messages: [{ role: 'user', content: 'Count from 1 to 5' }],
-    stream: true
-  });
+    console.log('\n[Test 2] Streaming completion...');
+    const stream = await chatCompletion({
+      messages: [{ role: 'user', content: 'Count from 1 to 3 slowly.' }],
+      stream: true
+    });
 
-  process.stdout.write('Stream chunks: ');
-  stream.on('data', chunk => {
-    process.stdout.write(chunk.toString());
-  });
+    process.stdout.write('Stream: ');
+    return new Promise((resolve, reject) => {
+      stream.on('data', chunk => {
+        // Simple chunk display
+        process.stdout.write(chunk.toString().replace(/\n/g, ' '));
+      });
+      stream.on('end', () => {
+        console.log('\n\n--- Test Complete ---');
+        resolve();
+      });
+      stream.on('error', reject);
+    });
 
-  stream.on('end', () => {
-    console.log('\nStream completed.');
-  });
+  } catch (err) {
+    console.error('\n❌ Test Failed:', err.message);
+    if (err.message.includes('ECONNREFUSED')) {
+      console.log('💡 Tip: Ensure Ollama is running on http://localhost:11434');
+    }
+  }
 }
 
-testAI().catch(console.error);
+testOllama().catch(console.error);
