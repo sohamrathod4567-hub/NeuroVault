@@ -169,20 +169,23 @@ async function submitChat(retryText = null) {
       },
       body: JSON.stringify({ 
         question, 
-        history: chatHistory.slice(-10), // Send last 10 messages for context
+        history: chatHistory.slice(-10), 
         stream: true 
       }),
       signal: abortController.signal
     });
 
+    // Hide typing indicator before processing response
     hideTypingIndicator(typing);
 
     if (!response.ok) {
-      const errData = await response.json();
-      throw new Error(errData.error || 'Chat failed');
+      // response.json() works here because the error path sends JSON
+      let errMsg = 'Chat failed';
+      try { const errData = await response.json(); errMsg = errData.error || errMsg; } catch { /* ignore */ }
+      throw new Error(errMsg);
     }
 
-    // Handle Streaming Response
+    // Stream the plain-text response from the backend
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let assistantBubbleCreated = false;
@@ -191,7 +194,9 @@ async function submitChat(retryText = null) {
       const { done, value } = await reader.read();
       if (done) break;
 
+      // Backend now sends clean text — no SSE parsing needed here
       const chunk = decoder.decode(value, { stream: true });
+      if (!chunk) continue;
       fullAssistantContent += chunk;
 
       if (!assistantBubbleCreated) {
@@ -208,7 +213,7 @@ async function submitChat(retryText = null) {
       updateStreamingBubble(assistantMsgId, fullAssistantContent);
     }
 
-    // Finalize assistant message
+    // Finalize the streamed bubble in place (no duplicate creation)
     finalizeStreamingBubble(assistantMsgId, fullAssistantContent);
     chatHistory.push({ 
       role: 'assistant', 
@@ -221,9 +226,16 @@ async function submitChat(retryText = null) {
     
     hideTypingIndicator(typing);
     console.error('[chat]', err);
+
+    // Translate technical errors into a clean friendly message
+    let userMsg = err.message || 'AI is currently unavailable.';
+    if (userMsg.includes('No AI provider') || userMsg.includes('unavailable')) {
+      userMsg = 'AI is currently unavailable. Add a free **GEMINI_API_KEY** to your `.env` file. Get one free at [aistudio.google.com](https://aistudio.google.com/apikey).';
+    }
+
     appendMessage({ 
       role: 'assistant', 
-      content: err.message || 'An unexpected error occurred.', 
+      content: userMsg, 
       error: true,
       retryText: question
     });
@@ -252,11 +264,15 @@ function appendMessage({ role, content, sources, error, id, timestamp, retryText
   if (role === 'user') {
     html = `
       <div class="message-content-wrapper">
-        <div class="message-bubble${error ? ' error' : ''}">${escChatHtml(content)}</div>
+        <div class="message-bubble">${escChatHtml(content)}</div>
         <div class="message-meta">${timeStr}</div>
       </div>`;
   } else {
     let { mainContent, followups } = parseAssistantContent(content);
+
+    if (error) {
+       mainContent = `⚠️ **System Note**: ${content || 'AI is currently unavailable.'}`;
+    }
 
     html = `
       <div class="msg-avatar ai-av">✨</div>
@@ -278,7 +294,7 @@ function appendMessage({ role, content, sources, error, id, timestamp, retryText
     }
 
     if (error && retryText) {
-      html += `<button class="retry-btn" onclick="retryChat('${escChatHtml(retryText)}', '${msgId}')">Retry Request</button>`;
+      html += `<button class="retry-btn" onclick="retryChat('${escChatHtml(retryText)}', '${msgId}')">🔄 Retry Request</button>`;
     }
 
     if (!error && mainContent && !isStreaming) {
@@ -316,16 +332,55 @@ function updateStreamingBubble(id, content) {
 function finalizeStreamingBubble(id, content) {
   const wrap = document.getElementById(id);
   const bubble = document.getElementById(`bubble_${id}`);
-  if (!bubble || !wrap) return;
+  if (!wrap) return;
+
   wrap.classList.remove('streaming');
+
+  // If no content streamed at all (empty response), show fallback
+  if (!content || !content.trim()) {
+    if (bubble) bubble.innerHTML = '<p><em>No response received. Please try again.</em></p>';
+    return;
+  }
+
   const { mainContent, followups } = parseAssistantContent(content);
-  bubble.innerHTML = markdownToHtml(mainContent);
-  
-  // Re-render the whole message to include actions and followups if they exist
-  const role = 'assistant';
-  const timestamp = new Date().toISOString(); // approximate
-  appendMessage({ role, content, id, timestamp });
-  wrap.remove(); // Remove the old streaming wrap
+
+  // Update the bubble content in-place (no duplicate messages)
+  if (bubble) {
+    bubble.innerHTML = markdownToHtml(mainContent);
+  }
+
+  // Append meta row (timestamp + copy) and action buttons under the existing wrap
+  const metaDiv = wrap.querySelector('.message-meta');
+  if (metaDiv) {
+    const timeStr = formatTime(new Date());
+    metaDiv.innerHTML = `${timeStr}<button class="meta-action" onclick="copyToClipboard('${escChatHtml(mainContent)}')">Copy</button>`;
+  }
+
+  // Add AI action buttons
+  const wrapper = wrap.querySelector('.message-content-wrapper');
+  if (wrapper && mainContent) {
+    // Remove old action placeholder if any
+    wrapper.querySelectorAll('.ai-actions, .followup-suggestions').forEach(el => el.remove());
+
+    const actionsEl = document.createElement('div');
+    actionsEl.className = 'ai-actions';
+    actionsEl.innerHTML = `
+      <button class="ai-action-btn" onclick="handleChatAction('expand', '${id}')">✨ Expand</button>
+      <button class="ai-action-btn" onclick="handleChatAction('simplify', '${id}')">🎯 Simplify</button>
+      <button class="ai-action-btn" onclick="handleChatAction('summarize', '${id}')">📝 Summarize</button>`;
+    wrapper.appendChild(actionsEl);
+
+    if (followups.length > 0) {
+      const fwEl = document.createElement('div');
+      fwEl.className = 'followup-suggestions';
+      fwEl.innerHTML = followups.map(f =>
+        `<button class="followup-chip" onclick="useSuggestedQuestion(this.dataset.q)" data-q="${escChatHtml(f)}">${escChatHtml(f)}</button>`
+      ).join('');
+      wrapper.appendChild(fwEl);
+    }
+  }
+
+  autoScroll();
 }
 
 function parseAssistantContent(content) {
@@ -480,38 +535,42 @@ function markdownToHtml(md) {
   if (!md) return '';
   let html = md.trim();
 
-  // 1. Code blocks
+  // 1. Code blocks (multiline)
   html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
     return `<pre class="code-block"><code>${escChatHtml(code.trim())}</code></pre>`;
   });
 
-  // 2. Tables
+  // 2. Inline code (single backtick)
+  html = html.replace(/`([^`\n]+)`/g, (match, code) => {
+    return `<code class="inline-code">${escChatHtml(code)}</code>`;
+  });
+
+  // 3. Tables
   html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
     const cells = content.split('|').map(c => `<td>${c.trim()}</td>`).join('');
     return `<tr>${cells}</tr>`;
   });
   html = html.replace(/(<tr>.*<\/tr>)+/gs, '<table>$1</table>');
 
-  // 3. Typography
+  // 4. Typography
   html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-  // 4. Citations
+  // 5. Citations
   html = html.replace(/\[(\d+)\]/g, '<span class="cite-badge" onclick="scrollToSource($1)">$1</span>');
 
-  // 5. Lists
+  // 6. Lists
   html = html.replace(/^[-*•] (.+)$/gm, '<li>$1</li>');
   html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
 
-  // 6. Paragraphs
-  const paragraphs = html.split(/\n\n+/);
-  html = paragraphs.map(p => {
-    p = p.trim();
-    if (!p) return '';
-    if (p.startsWith('<pre') || p.startsWith('<ul') || p.startsWith('<table') || p.startsWith('<li')) return p;
-    return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+  // 7. Paragraphs
+  const sections = html.split(/\n\n+/);
+  html = sections.map(s => {
+    s = s.trim();
+    if (!s) return '';
+    if (s.startsWith('<pre') || s.startsWith('<ul') || s.startsWith('<table') || s.startsWith('<li')) return s;
+    return `<p>${s.replace(/\n/g, '<br>')}</p>`;
   }).join('');
 
   return html;
