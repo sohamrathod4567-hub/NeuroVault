@@ -533,47 +533,114 @@ function escChatHtml(str) {
 
 function markdownToHtml(md) {
   if (!md) return '';
-  let html = md.trim();
 
-  // 1. Code blocks (multiline)
-  html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
-    return `<pre class="code-block"><code>${escChatHtml(code.trim())}</code></pre>`;
-  });
+  // Split into lines for line-by-line processing
+  const lines = md.split('\n');
+  const output = [];
+  let i = 0;
 
-  // 2. Inline code (single backtick)
-  html = html.replace(/`([^`\n]+)`/g, (match, code) => {
-    return `<code class="inline-code">${escChatHtml(code)}</code>`;
-  });
+  while (i < lines.length) {
+    const line = lines[i];
 
-  // 3. Tables
-  html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
-    const cells = content.split('|').map(c => `<td>${c.trim()}</td>`).join('');
-    return `<tr>${cells}</tr>`;
-  });
-  html = html.replace(/(<tr>.*<\/tr>)+/gs, '<table>$1</table>');
+    // --- Fenced code block ---
+    if (line.trimStart().startsWith('```')) {
+      const codeLines = [];
+      i++;
+      while (i < lines.length && !lines[i].trimStart().startsWith('```')) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      output.push(`<pre class="code-block"><code>${escChatHtml(codeLines.join('\n'))}</code></pre>`);
+      i++; // skip closing ```
+      continue;
+    }
 
-  // 4. Typography
-  html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // --- Headings ---
+    const h3 = line.match(/^###\s+(.+)/);
+    const h2 = line.match(/^##\s+(.+)/);
+    const h1 = line.match(/^#\s+(.+)/);
+    if (h3) { output.push(`<h3>${inlineFormat(h3[1])}</h3>`); i++; continue; }
+    if (h2) { output.push(`<h2>${inlineFormat(h2[1])}</h2>`); i++; continue; }
+    if (h1) { output.push(`<h1>${inlineFormat(h1[1])}</h1>`); i++; continue; }
 
-  // 5. Citations
-  html = html.replace(/\[(\d+)\]/g, '<span class="cite-badge" onclick="scrollToSource($1)">$1</span>');
+    // --- Unordered list ---
+    if (/^[-*•]\s/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^[-*•]\s/.test(lines[i])) {
+        items.push(`<li>${inlineFormat(lines[i].replace(/^[-*•]\s+/, ''))}</li>`);
+        i++;
+      }
+      output.push(`<ul>${items.join('')}</ul>`);
+      continue;
+    }
 
-  // 6. Lists
-  html = html.replace(/^[-*•] (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+    // --- Ordered list ---
+    if (/^\d+\.\s/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+        items.push(`<li>${inlineFormat(lines[i].replace(/^\d+\.\s+/, ''))}</li>`);
+        i++;
+      }
+      output.push(`<ol>${items.join('')}</ol>`);
+      continue;
+    }
 
-  // 7. Paragraphs
-  const sections = html.split(/\n\n+/);
-  html = sections.map(s => {
-    s = s.trim();
-    if (!s) return '';
-    if (s.startsWith('<pre') || s.startsWith('<ul') || s.startsWith('<table') || s.startsWith('<li')) return s;
-    return `<p>${s.replace(/\n/g, '<br>')}</p>`;
-  }).join('');
+    // --- Table rows ---
+    if (/^\|.+\|$/.test(line)) {
+      const rows = [];
+      while (i < lines.length && /^\|.+\|$/.test(lines[i])) {
+        // Skip separator rows like |---|---|
+        if (!/^\|[-:| ]+\|$/.test(lines[i])) {
+          const cells = lines[i].slice(1, -1).split('|').map(c => `<td>${inlineFormat(c.trim())}</td>`).join('');
+          rows.push(`<tr>${cells}</tr>`);
+        }
+        i++;
+      }
+      if (rows.length) output.push(`<table>${rows.join('')}</table>`);
+      continue;
+    }
 
-  return html;
+    // --- Blank line — paragraph boundary ---
+    if (line.trim() === '') {
+      i++;
+      continue;
+    }
+
+    // --- Paragraph: collect consecutive non-blank, non-special lines ---
+    const paraLines = [];
+    while (
+      i < lines.length &&
+      lines[i].trim() !== '' &&
+      !/^[-*•]\s/.test(lines[i]) &&
+      !/^\d+\.\s/.test(lines[i]) &&
+      !/^#{1,3}\s/.test(lines[i]) &&
+      !lines[i].trimStart().startsWith('```') &&
+      !/^\|.+\|$/.test(lines[i])
+    ) {
+      paraLines.push(inlineFormat(lines[i]));
+      i++;
+    }
+    if (paraLines.length) {
+      output.push(`<p>${paraLines.join('<br>')}</p>`);
+    }
+  }
+
+  return output.join('');
+}
+
+/** Apply inline markdown: bold, italic, inline-code, citations, links */
+function inlineFormat(text) {
+  // Inline code
+  text = text.replace(/`([^`]+)`/g, (_, code) => `<code class="inline-code">${escChatHtml(code)}</code>`);
+  // Bold + italic
+  text = text.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Citations [1]
+  text = text.replace(/\[(\d+)\]/g, '<span class="cite-badge" onclick="scrollToSource($1)">$1</span>');
+  // Links [label](url)
+  text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return text;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
