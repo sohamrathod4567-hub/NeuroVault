@@ -9,12 +9,17 @@ router.use(authenticate);
 
 /**
  * POST /api/chat
- * Body: { question: string, history: Array, topK?: number, stream?: boolean }
- * 
- * Supports streaming if 'stream' is true.
+ * Body: { question, history, topK?, stream? }
+ *
+ * When stream=true the backend parses Ollama's SSE chunks and forwards
+ * ONLY the plain-text delta to the browser, so the client never sees JSON.
  */
 router.post('/', async (req, res) => {
   const { question, history = [], topK = 5, stream = false } = req.body;
+
+  if (!question || !question.trim()) {
+    return res.status(400).json({ error: 'Question is required' });
+  }
 
   try {
     const result = await chatService.processQuery({
@@ -22,90 +27,90 @@ router.post('/', async (req, res) => {
       question,
       history,
       topK,
-      stream
+      stream,
     });
 
+    /* ── Streaming path ─────────────────────────────────────────── */
     if (stream) {
-      // Set headers for SSE (Server-Sent Events)
-      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
       res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
       res.flushHeaders();
 
-      // result is a readable stream from aiProvider
-      result.on('data', chunk => {
-        const text = chunk.toString();
-        // Send raw text for the frontend to parse
-        res.write(text);
-      });
-
-      result.on('end', () => {
-        res.end();
-      });
-
+      // result is already a plain-text Readable (SSE parsed inside aiProvider)
+      result.on('data', (chunk) => res.write(chunk));
+      result.on('end', () => res.end());
       result.on('error', (err) => {
         console.error('[chat-stream] Error:', err.message);
-        res.end();
+        if (!res.writableEnded) {
+          res.write('\n\n[Stream error. Please retry.]');
+          res.end();
+        }
       });
 
-    } else {
-      // Regular JSON response
-      res.json({ answer: result, model: 'Pollinations AI' });
+      return;
     }
 
+    /* ── Non-streaming path ─────────────────────────────────────── */
+    res.json({ answer: result });
+
   } catch (err) {
-    console.error('[chat] Route failed:', err.message);
-    res.status(500).json({ error: err.message || 'Chat failed. Please try again.' });
+    console.error('[chat] Route error:', err.message);
+    // Guard: don't try to set headers if we already started streaming
+    if (!res.headersSent) {
+      res.status(500).json({ error: err.message || 'Chat failed. Please try again.' });
+    }
   }
 });
 
 /**
- * POST /api/chat/action (Refactored)
- * Body: { action: 'expand'|'simplify'|'summarize', text: string }
+ * POST /api/chat/action
+ * Body: { action: 'expand'|'simplify'|'summarize', text }
  */
 router.post('/action', async (req, res) => {
   const { action, text } = req.body;
   if (!text || !action) return res.status(400).json({ error: 'Text and action are required' });
 
-  let prompt = '';
-  switch(action) {
-    case 'expand': prompt = `Expand on the following text, providing more detail and explanation. Format in markdown:\n\n${text}`; break;
-    case 'simplify': prompt = `Simplify the following text so it is easier to understand. Format in markdown:\n\n${text}`; break;
-    case 'summarize': prompt = `Summarize the following text briefly. Format in markdown:\n\n${text}`; break;
-    default: return res.status(400).json({ error: 'Invalid action' });
-  }
+  const prompts = {
+    expand:   `Expand on the following text, providing more detail and explanation. Format in markdown:\n\n${text}`,
+    simplify: `Simplify the following text so it is easier to understand. Format in markdown:\n\n${text}`,
+    summarize:`Summarize the following text briefly. Format in markdown:\n\n${text}`,
+  };
+
+  if (!prompts[action]) return res.status(400).json({ error: 'Invalid action' });
 
   try {
-    const answer = await chatCompletion({ messages: [{ role: 'user', content: prompt }] });
+    const answer = await chatCompletion({ messages: [{ role: 'user', content: prompts[action] }] });
     res.json({ answer });
   } catch (err) {
-    res.status(500).json({ error: 'Action failed.' });
+    console.error('[chat/action] Error:', err.message);
+    res.status(500).json({ error: 'AI is currently unavailable.' });
   }
 });
 
 /**
- * POST /api/chat/inline (Refactored)
- * Body: { action: 'improve'|'summarize'|'explain', text: string }
+ * POST /api/chat/inline
+ * Body: { action: 'improve'|'summarize'|'explain', text }
  */
 router.post('/inline', async (req, res) => {
   const { action, text } = req.body;
   if (!text || !action) return res.status(400).json({ error: 'Text and action are required' });
 
-  let prompt = '';
-  switch(action) {
-    case 'improve': prompt = `Improve the writing of the following text while keeping its original meaning and tone. Return ONLY the improved text, no conversational filler:\n\n${text}`; break;
-    case 'summarize': prompt = `Summarize the following text concisely. Return ONLY the summary, no conversational filler:\n\n${text}`; break;
-    case 'explain': prompt = `Explain the following text in simple terms:\n\n${text}`; break;
-    default: return res.status(400).json({ error: 'Invalid action' });
-  }
+  const prompts = {
+    improve:  `Improve the writing of the following text while keeping its original meaning and tone. Return ONLY the improved text:\n\n${text}`,
+    summarize:`Summarize the following text concisely. Return ONLY the summary:\n\n${text}`,
+    explain:  `Explain the following text in simple terms:\n\n${text}`,
+  };
+
+  if (!prompts[action]) return res.status(400).json({ error: 'Invalid action' });
 
   try {
-    const answer = await chatCompletion({ messages: [{ role: 'user', content: prompt }] });
+    const answer = await chatCompletion({ messages: [{ role: 'user', content: prompts[action] }] });
     res.json({ answer });
   } catch (err) {
-    res.status(500).json({ error: 'Inline AI failed.' });
+    console.error('[chat/inline] Error:', err.message);
+    res.status(500).json({ error: 'AI is currently unavailable.' });
   }
 });
 
 module.exports = router;
-
