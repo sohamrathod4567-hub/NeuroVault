@@ -4,25 +4,80 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NeuroVault — AI Knowledge Base</title>
-  <meta name="description" content="NeuroVault: Your personal AI-powered knowledge base. Capture ideas, research, and notes securely." />
+  <meta name="description" content="NeuroVault: Your personal AI-powered knowledge base. Capture ideas, research, and notes — then query them with AI." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
   <link rel="stylesheet" href="/css/main.css" />
   <link rel="stylesheet" href="/css/auth.css" />
 </head>
 <body>
-  <div class="auth-page">
-    <div>
-      <!-- Logo -->
-      <div class="auth-logo">
-        <div class="logo-icon">🧠</div>
-        <div>
-          <span class="logo-text">NeuroVault</span>
-          <span class="logo-sub">AI Knowledge Base</span>
-        </div>
-      </div>
 
-      <!-- Card -->
-      <div class="glass-card auth-card">
+  <!-- Animated background grid -->
+  <div class="auth-bg">
+    <div class="auth-bg-grid"></div>
+    <div class="auth-bg-glow auth-bg-glow-1"></div>
+    <div class="auth-bg-glow auth-bg-glow-2"></div>
+  </div>
+
+  <div class="auth-layout">
+
+    <!-- ===== LEFT — Hero panel ===== -->
+    <div class="auth-hero">
+      <div class="auth-hero-inner">
+        <!-- Brand -->
+        <div class="hero-brand">
+          <div class="hero-logo-icon">🧠</div>
+          <div>
+            <span class="hero-logo-name">NeuroVault</span>
+            <span class="hero-logo-tag">Beta</span>
+          </div>
+        </div>
+
+        <!-- Headline -->
+        <div class="hero-headline">
+          <h1 class="hero-title">Your knowledge,<br><span class="hero-title-accent">amplified by AI</span></h1>
+          <p class="hero-desc">Write notes in markdown, upload PDFs, and ask your entire knowledge base questions — powered by semantic search and local AI embeddings.</p>
+        </div>
+
+        <!-- Features -->
+        <div class="hero-features">
+          <div class="hero-feature">
+            <div class="hf-icon">⚡</div>
+            <div>
+              <div class="hf-title">Semantic Search</div>
+              <div class="hf-desc">Find notes by meaning, not just keywords</div>
+            </div>
+          </div>
+          <div class="hero-feature">
+            <div class="hf-icon">🔒</div>
+            <div>
+              <div class="hf-title">Private by Default</div>
+              <div class="hf-desc">Everything runs locally on your machine</div>
+            </div>
+          </div>
+          <div class="hero-feature">
+            <div class="hf-icon">✨</div>
+            <div>
+              <div class="hf-title">AI-Powered Editing</div>
+              <div class="hf-desc">Improve, summarize, and expand any text inline</div>
+            </div>
+          </div>
+          <div class="hero-feature">
+            <div class="hf-icon">📄</div>
+            <div>
+              <div class="hf-title">PDF Ingestion</div>
+              <div class="hf-desc">Upload documents and query them with AI</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social proof / footer note -->
+        <p class="hero-footer-note">Free &amp; open source · No cloud required · Runs on your hardware</p>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT — Auth card ===== -->
+    <div class="auth-panel">
+      <div class="auth-card">
         <!-- Tabs -->
         <div class="auth-tabs">
           <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Sign In</button>
@@ -31,64 +86,98 @@
 
         <!-- Login Form -->
         <form class="auth-form active" id="form-login" onsubmit="handleLogin(event)">
-          <div>
+          <div class="form-header">
             <p class="form-title">Welcome back</p>
-            <p class="form-subtitle">Sign in to your knowledge base</p>
+            <p class="form-subtitle">Sign in to your knowledge vault</p>
           </div>
 
           <div class="form-group">
-            <label for="login-email">Email</label>
+            <label class="form-label" for="login-email">Email address</label>
             <input class="form-input" type="email" id="login-email"
               placeholder="you@example.com" autocomplete="email" required />
           </div>
 
           <div class="form-group">
-            <label for="login-password">Password</label>
-            <input class="form-input" type="password" id="login-password"
-              placeholder="••••••••" autocomplete="current-password" required />
+            <label class="form-label" for="login-password">Password</label>
+            <div class="input-wrapper">
+              <input class="form-input" type="password" id="login-password"
+                placeholder="••••••••" autocomplete="current-password" required />
+              <button type="button" class="pw-toggle" onclick="togglePw('login-password', this)" tabindex="-1" title="Show/hide password">
+                <svg id="pw-eye-login" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
 
           <button type="submit" class="btn btn-primary submit-btn" id="login-submit">
             Sign In
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
+
+          <p class="auth-switch-link">Don't have an account? <button type="button" class="link-btn" onclick="switchTab('register')">Create one →</button></p>
         </form>
 
         <!-- Register Form -->
         <form class="auth-form" id="form-register" onsubmit="handleRegister(event)">
-          <div>
+          <div class="form-header">
             <p class="form-title">Create your vault</p>
             <p class="form-subtitle">Start capturing knowledge today</p>
           </div>
 
           <div class="form-group">
-            <label for="reg-username">Username</label>
+            <label class="form-label" for="reg-username">Username</label>
             <input class="form-input" type="text" id="reg-username"
               placeholder="yourname" autocomplete="username" required />
           </div>
 
           <div class="form-group">
-            <label for="reg-email">Email</label>
+            <label class="form-label" for="reg-email">Email address</label>
             <input class="form-input" type="email" id="reg-email"
               placeholder="you@example.com" autocomplete="email" required />
           </div>
 
           <div class="form-group">
-            <label for="reg-password">Password</label>
-            <input class="form-input" type="password" id="reg-password"
-              placeholder="Min. 6 characters" autocomplete="new-password" required minlength="6" />
+            <label class="form-label" for="reg-password">
+              Password
+              <span class="label-hint">(min. 6 characters)</span>
+            </label>
+            <div class="input-wrapper">
+              <input class="form-input" type="password" id="reg-password"
+                placeholder="••••••••" autocomplete="new-password" required minlength="6" />
+              <button type="button" class="pw-toggle" onclick="togglePw('reg-password', this)" tabindex="-1" title="Show/hide password">
+                <svg id="pw-eye-reg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
           </div>
 
           <button type="submit" class="btn btn-primary submit-btn" id="register-submit">
             Create Account
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
+
+          <p class="auth-switch-link">Already have an account? <button type="button" class="link-btn" onclick="switchTab('login')">Sign in →</button></p>
         </form>
       </div>
+
+      <p class="auth-legal">By signing in you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
     </div>
+
   </div>
 
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
   <script src="/js/auth.js"></script>
+  <script>
+    function togglePw(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.querySelector('svg').innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+      } else {
+        input.type = 'password';
+        btn.querySelector('svg').innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+      }
+    }
+  </script>
 </body>
 </html>
