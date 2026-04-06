@@ -274,7 +274,7 @@ function renderNotesList(notes) {
       : '';
 
     const icon = getTagIcon(note.tag);
-    const previewText = note.content ? escHtml(note.content) : 'No content';
+    const previewText = note.content ? escHtml(stripMarkdown(note.content)) : 'No content';
 
     el.innerHTML = `
       <div class="note-item-header">
@@ -440,6 +440,9 @@ function openNote(id) {
 
   // Show editor
   showEditor();
+
+  // Reset to edit mode on new note open
+  setEditorMode('edit');
 
   // Populate fields
   document.getElementById('note-title').value   = note.title || '';
@@ -931,3 +934,412 @@ function closeInlineAiResult() {
     aiResultPopoverEl.dataset.result = '';
   }
 }
+
+/* ================================
+   MARKDOWN ENGINE
+   ================================ */
+
+/**
+ * Lightweight dependency-free markdown → HTML renderer.
+ * Supports: headings, bold, italic, strikethrough, inline code,
+ * code blocks, blockquotes, ul, ol, task lists, HR, auto-links.
+ */
+function renderMarkdown(raw) {
+  if (!raw) return '<p class="prose-empty">No content yet. Switch to Edit mode to start writing.</p>';
+
+  let html = '';
+  const lines = raw.split('\n');
+  let i = 0;
+
+  // Helpers
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // Inline formatting: bold, italic, strikethrough, code, links
+  function inlineFormat(text) {
+    // Escape HTML first so we don't double-encode
+    let s = esc(text);
+    // Code (must be first to protect content from other formatting)
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Bold
+    s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    // Italic
+    s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+    s = s.replace(/_([^_\n]+)_/g, '<em>$1</em>');
+    // Strikethrough
+    s = s.replace(/~~(.+?)~~/g, '<del>$1</del>');
+    // Auto-links
+    s = s.replace(/(https?:\/\/[^\s<>"']+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+    return s;
+  }
+
+  // Process code blocks first (``` ... ```)
+  function processLine(line) {
+    return line;
+  }
+
+  const result = [];
+  let inCodeBlock = false;
+  let codeLang = '';
+  let codeLines = [];
+  let inUl = false;
+  let inOl = false;
+  let inTaskList = false;
+
+  function closeLists() {
+    if (inUl)       { result.push('</ul>'); inUl = false; }
+    if (inOl)       { result.push('</ol>'); inOl = false; }
+    if (inTaskList) { result.push('</ul>'); inTaskList = false; }
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // --- CODE BLOCK ---
+    if (!inCodeBlock && /^```/.test(line)) {
+      closeLists();
+      inCodeBlock = true;
+      codeLang = line.slice(3).trim();
+      codeLines = [];
+      continue;
+    }
+    if (inCodeBlock) {
+      if (/^```/.test(line)) {
+        inCodeBlock = false;
+        result.push(`<pre><code>${esc(codeLines.join('\n'))}</code></pre>`);
+        codeLines = [];
+      } else {
+        codeLines.push(line);
+      }
+      continue;
+    }
+
+    // --- HEADINGS ---
+    if (/^#{1}\s/.test(line)) {
+      closeLists();
+      result.push(`<h1>${inlineFormat(line.slice(2))}</h1>`);
+      continue;
+    }
+    if (/^#{2}\s/.test(line)) {
+      closeLists();
+      result.push(`<h2>${inlineFormat(line.slice(3))}</h2>`);
+      continue;
+    }
+    if (/^#{3}\s/.test(line)) {
+      closeLists();
+      result.push(`<h3>${inlineFormat(line.slice(4))}</h3>`);
+      continue;
+    }
+    if (/^#{4}\s/.test(line)) {
+      closeLists();
+      result.push(`<h4 style="font-size:1rem;font-weight:600;margin:var(--space-4) 0 var(--space-2);">${inlineFormat(line.slice(5))}</h4>`);
+      continue;
+    }
+
+    // --- HORIZONTAL RULE ---
+    if (/^(\-{3,}|\*{3,}|_{3,})$/.test(line.trim())) {
+      closeLists();
+      result.push('<hr>');
+      continue;
+    }
+
+    // --- BLOCKQUOTE ---
+    if (/^>\s?/.test(line)) {
+      closeLists();
+      result.push(`<blockquote><p>${inlineFormat(line.replace(/^>\s?/, ''))}</p></blockquote>`);
+      continue;
+    }
+
+    // --- TASK LIST ---
+    const taskMatch = line.match(/^[-*]\s\[(x| )\]\s(.*)/);
+    if (taskMatch) {
+      if (!inTaskList) {
+        closeLists();
+        result.push('<ul style="list-style:none;padding-left:0;">');
+        inTaskList = true;
+      }
+      const checked = taskMatch[1] === 'x';
+      const doneClass = checked ? ' class="task-item done"' : ' class="task-item"';
+      result.push(`<li${doneClass}><input type="checkbox" ${checked ? 'checked' : ''} onclick="return false;"><span>${inlineFormat(taskMatch[2])}</span></li>`);
+      continue;
+    }
+
+    // --- UNORDERED LIST ---
+    if (/^[-*]\s/.test(line)) {
+      if (inTaskList) { result.push('</ul>'); inTaskList = false; }
+      if (inOl) { result.push('</ol>'); inOl = false; }
+      if (!inUl) { result.push('<ul>'); inUl = true; }
+      result.push(`<li>${inlineFormat(line.replace(/^[-*]\s/, ''))}</li>`);
+      continue;
+    }
+
+    // --- ORDERED LIST ---
+    if (/^\d+\.\s/.test(line)) {
+      if (inTaskList) { result.push('</ul>'); inTaskList = false; }
+      if (inUl) { result.push('</ul>'); inUl = false; }
+      if (!inOl) { result.push('<ol>'); inOl = true; }
+      result.push(`<li>${inlineFormat(line.replace(/^\d+\.\s/, ''))}</li>`);
+      continue;
+    }
+
+    // --- BLANK LINE ---
+    if (line.trim() === '') {
+      closeLists();
+      result.push('');
+      continue;
+    }
+
+    // --- PARAGRAPH ---
+    closeLists();
+    result.push(`<p>${inlineFormat(line)}</p>`);
+  }
+
+  // Close any open blocks
+  if (inCodeBlock) {
+    result.push(`<pre><code>${esc(codeLines.join('\n'))}</code></pre>`);
+  }
+  closeLists();
+
+  return result.join('\n') || '<p class="prose-empty">No content yet.</p>';
+}
+
+/**
+ * Strip markdown tokens from text (for sidebar preview)
+ */
+function stripMarkdown(raw) {
+  if (!raw) return '';
+  return raw
+    .replace(/```[\s\S]*?```/g, '')   // code blocks
+    .replace(/`[^`]+`/g, '')          // inline code
+    .replace(/^#{1,6}\s+/gm, '')      // headings
+    .replace(/\*\*(.+?)\*\*/g, '$1') // bold
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')     // italic
+    .replace(/_(.+?)_/g, '$1')
+    .replace(/~~(.+?)~~/g, '$1')     // strikethrough
+    .replace(/^[-*]\s\[.\]\s/gm, '') // task items
+    .replace(/^[-*]\s/gm, '')        // ul
+    .replace(/^\d+\.\s/gm, '')       // ol
+    .replace(/^>\s?/gm, '')          // blockquote
+    .replace(/^---+$/gm, '')         // hr
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // links
+    .replace(/\n+/g, ' ')
+    .trim();
+}
+
+/* ================================
+   PREVIEW MODE LOGIC
+   ================================ */
+let editorMode = 'edit'; // 'edit' | 'preview'
+let previewDebounceTimer = null;
+
+function setEditorMode(mode) {
+  editorMode = mode;
+  const textarea = document.getElementById('note-content');
+  const preview = document.getElementById('note-preview-pane');
+  const editBtn = document.getElementById('edit-mode-btn');
+  const previewBtn = document.getElementById('preview-mode-btn');
+
+  if (mode === 'preview') {
+    if (textarea) textarea.style.display = 'none';
+    if (preview) {
+      preview.style.display = 'block';
+      renderPreviewPane();
+    }
+    if (editBtn) editBtn.classList.remove('active');
+    if (previewBtn) previewBtn.classList.add('active');
+  } else {
+    if (textarea) textarea.style.display = 'block';
+    if (preview) preview.style.display = 'none';
+    if (editBtn) editBtn.classList.add('active');
+    if (previewBtn) previewBtn.classList.remove('active');
+    if (textarea) textarea.focus();
+  }
+}
+
+function renderPreviewPane() {
+  const textarea = document.getElementById('note-content');
+  const preview = document.getElementById('note-preview-pane');
+  if (!textarea || !preview) return;
+  preview.innerHTML = renderMarkdown(textarea.value);
+}
+
+function debouncedPreviewRender() {
+  if (editorMode !== 'preview') return;
+  clearTimeout(previewDebounceTimer);
+  previewDebounceTimer = setTimeout(renderPreviewPane, 200);
+}
+
+/* ================================
+   FORMATTING TOOLBAR LOGIC
+   ================================ */
+
+/**
+ * Insert or wrap selected text with a markdown token.
+ * `format` is one of: h1, h2, h3, bold, italic, strike,
+ *   ul, ol, task, code, codeblock, quote, hr
+ */
+function insertFormat(format) {
+  const ta = document.getElementById('note-content');
+  if (!ta) return;
+
+  // If in preview mode, switch to edit first
+  if (editorMode === 'preview') setEditorMode('edit');
+
+  ta.focus();
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  const sel   = ta.value.substring(start, end);
+  const before = ta.value.substring(0, start);
+  const after  = ta.value.substring(end);
+
+  // Find whether cursor is at the start of a line
+  const lineStart = before.lastIndexOf('\n') + 1;
+  const currentLine = before.substring(lineStart) + sel;
+
+  let replacement = '';
+  let newCursorOffset = 0;
+
+  switch (format) {
+    case 'h1':
+      replacement = wrapLine(before, sel, after, ta, '# '); return;
+    case 'h2':
+      replacement = wrapLine(before, sel, after, ta, '## '); return;
+    case 'h3':
+      replacement = wrapLine(before, sel, after, ta, '### '); return;
+
+    case 'bold':
+      if (sel) {
+        replacement = `**${sel}**`;
+        newCursorOffset = replacement.length;
+      } else {
+        replacement = '**bold text**';
+        newCursorOffset = 2; // place cursor after **
+      }
+      break;
+
+    case 'italic':
+      if (sel) {
+        replacement = `*${sel}*`;
+        newCursorOffset = replacement.length;
+      } else {
+        replacement = '*italic text*';
+        newCursorOffset = 1;
+      }
+      break;
+
+    case 'strike':
+      if (sel) {
+        replacement = `~~${sel}~~`;
+        newCursorOffset = replacement.length;
+      } else {
+        replacement = '~~strikethrough~~';
+        newCursorOffset = 2;
+      }
+      break;
+
+    case 'code':
+      if (sel) {
+        replacement = `\`${sel}\``;
+        newCursorOffset = replacement.length;
+      } else {
+        replacement = '`code`';
+        newCursorOffset = 1;
+      }
+      break;
+
+    case 'codeblock': {
+      const block = sel || 'code here';
+      replacement = `\`\`\`\n${block}\n\`\`\``;
+      newCursorOffset = 4;
+      break;
+    }
+
+    case 'ul':
+      replacement = wrapLine(before, sel, after, ta, '- '); return;
+
+    case 'ol':
+      replacement = wrapLine(before, sel, after, ta, '1. '); return;
+
+    case 'task':
+      replacement = wrapLine(before, sel, after, ta, '- [ ] '); return;
+
+    case 'quote':
+      replacement = wrapLine(before, sel, after, ta, '> '); return;
+
+    case 'hr':
+      replacement = '\n\n---\n\n';
+      newCursorOffset = replacement.length;
+      break;
+
+    default:
+      return;
+  }
+
+  ta.value = before + replacement + after;
+  const newPos = start + newCursorOffset;
+  ta.selectionStart = newPos;
+  ta.selectionEnd   = newPos;
+  markUnsaved();
+  debouncedPreviewRender();
+}
+
+/**
+ * Helper to prefix the current line (or selected lines) with a token.
+ * Handles multi-line selections elegantly.
+ */
+function wrapLine(before, sel, after, ta, prefix) {
+  const fullText = ta.value;
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+
+  // Find the start of the first selected line
+  const lineStart = fullText.lastIndexOf('\n', start - 1) + 1;
+
+  let selectedBlock = fullText.substring(lineStart, end);
+  const prefixed = selectedBlock.split('\n').map(l => prefix + l).join('\n');
+
+  ta.value = fullText.substring(0, lineStart) + prefixed + fullText.substring(end);
+  ta.selectionStart = lineStart + prefix.length;
+  ta.selectionEnd   = lineStart + prefixed.length;
+  markUnsaved();
+  debouncedPreviewRender();
+}
+
+// ---- Keyboard shortcuts for formatting ----
+document.addEventListener('keydown', (e) => {
+  const ta = document.getElementById('note-content');
+  const inEditor = document.activeElement === ta;
+  if (!inEditor) return;
+
+  // Bold: Ctrl+B
+  if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+    e.preventDefault();
+    insertFormat('bold');
+  }
+  // Italic: Ctrl+I
+  if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+    e.preventDefault();
+    insertFormat('italic');
+  }
+  // Code: Ctrl+`
+  if ((e.ctrlKey || e.metaKey) && e.key === '`') {
+    e.preventDefault();
+    insertFormat('code');
+  }
+  // H1: Ctrl+1
+  if ((e.ctrlKey || e.metaKey) && e.key === '1') {
+    e.preventDefault();
+    insertFormat('h1');
+  }
+  // H2: Ctrl+2
+  if ((e.ctrlKey || e.metaKey) && e.key === '2') {
+    e.preventDefault();
+    insertFormat('h2');
+  }
+  // H3: Ctrl+3
+  if ((e.ctrlKey || e.metaKey) && e.key === '3') {
+    e.preventDefault();
+    insertFormat('h3');
+  }
+}, true); // capture phase so it fires before the global Ctrl+S
