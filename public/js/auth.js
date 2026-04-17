@@ -102,6 +102,7 @@ async function handleLogin(e) {
   } catch (err) {
     showToast(err.message, 'error');
     setLoading('login-submit', false);
+    document.getElementById('login-password').focus();
   }
 }
 
@@ -135,5 +136,6 @@ async function handleRegister(e) {
   } catch (err) {
     showToast(err.message, 'error');
     setLoading('register-submit', false);
+    document.getElementById('reg-password').focus();
   }
 }
