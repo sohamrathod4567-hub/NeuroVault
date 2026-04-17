@@ -29,6 +29,9 @@ db.exec(`
     updated_at TEXT    DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
   );
+
+  CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
+  CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 `);
 
 // Idempotent migration: add embedding column to existing databases
