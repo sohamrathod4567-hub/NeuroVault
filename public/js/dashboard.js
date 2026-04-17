@@ -75,6 +75,19 @@ document.addEventListener('DOMContentLoaded', () => {
   initUserBadge();
   initGreeting();
   loadNotes();
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const searchInput = document.getElementById('search-input');
+      const aiToolbar = document.getElementById('ai-toolbar');
+      if (searchInput && document.activeElement === searchInput) {
+        searchInput.blur();
+      }
+      if (aiToolbar && aiToolbar.style.display !== 'none') {
+        if (window.getSelection) window.getSelection().removeAllRanges();
+      }
+    }
+  });
 });
 
 function toggleSidebar() {
