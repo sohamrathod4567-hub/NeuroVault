@@ -105,10 +105,11 @@ async function callOpenRouter({ messages, stream, max_tokens }) {
       });
 
       if (!res.ok) {
-        const err = await res.json();
+        let errMsg = `Status ${res.status}`;
+        try { const errObj = await res.json(); errMsg = errObj.error?.message || errMsg; } catch {}
         // Privacy-restrictions error — skip to next model
-        if (err.error?.message?.includes('guardrail')) continue;
-        throw new Error(`OpenRouter ${res.status}: ${err.error?.message}`);
+        if (errMsg.includes('guardrail')) continue;
+        throw new Error(`OpenRouter ${res.status}: ${errMsg}`);
       }
 
       if (stream) return sseToTextStream(res.body);
@@ -169,8 +170,9 @@ async function callGemini({ messages, max_tokens }) {
     }
 
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(`Gemini ${res.status}: ${err.error?.message}`);
+      let errMsg = `Status ${res.status}`;
+      try { const errObj = await res.json(); errMsg = errObj.error?.message || errMsg; } catch {}
+      throw new Error(`Gemini ${res.status}: ${errMsg}`);
     }
 
     const data = await res.json();
@@ -198,10 +200,11 @@ async function callGroq({ messages, stream, max_tokens }) {
         body: JSON.stringify({ model, messages, max_tokens, temperature: 0.2, stream })
       });
       if (!res.ok) {
-        const e = await res.json();
+        let errMsg = `Status ${res.status}`;
+        try { const errObj = await res.json(); errMsg = errObj.error?.message || errMsg; } catch {}
         // If model is decommissioned, try next one
-        if (e.error?.message?.includes('decommissioned') || e.error?.message?.includes('not found')) continue;
-        throw new Error(`Groq ${res.status}: ${e.error?.message}`);
+        if (errMsg.includes('decommissioned') || errMsg.includes('not found')) continue;
+        throw new Error(`Groq ${res.status}: ${errMsg}`);
       }
       if (stream) return sseToTextStream(res.body);
       const data = await res.json();
@@ -223,7 +226,11 @@ async function callOpenAI({ messages, stream, max_tokens }) {
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
     body: JSON.stringify({ model: 'gpt-4o-mini', messages, max_tokens, temperature: 0.2, stream })
   });
-  if (!res.ok) { const e = await res.json(); throw new Error(`OpenAI ${res.status}: ${e.error?.message}`); }
+  if (!res.ok) { 
+    let errMsg = `Status ${res.status}`;
+    try { const errObj = await res.json(); errMsg = errObj.error?.message || errMsg; } catch {}
+    throw new Error(`OpenAI ${res.status}: ${errMsg}`); 
+  }
   if (stream) return sseToTextStream(res.body);
   const data = await res.json();
   return data.choices[0]?.message?.content?.trim() || '';
