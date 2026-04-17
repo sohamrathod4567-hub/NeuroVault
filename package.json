@@ -5,7 +5,8 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "nodemon server/index.js"
+    "dev": "nodemon server/index.js",
+    "backup": "mkdir data\\backups 2>nul & copy data\\neurovault.db data\\backups\\neurovault_backup.db"
   },
   "keywords": [],
   "author": "",
