@@ -92,6 +92,7 @@ function initResizers() {
   const layout = document.querySelector('.dashboard-layout');
   const resizerL = document.getElementById('resizer-left');
   const resizerR = document.getElementById('resizer-right');
+  if (!layout || !resizerL || !resizerR) return;
   
   // Load saved widths
   const savedSidebar = localStorage.getItem('nv_width_sidebar');
@@ -722,7 +723,7 @@ function executeCommand(cmd) {
 function focusSidebarSearch() {
   const searchInput = document.getElementById('search-input');
   if (searchInput) {
-    switchView('notes');
+    if (typeof switchView === 'function') switchView('notes');
     setTimeout(() => searchInput.focus(), 100);
   }
 }
