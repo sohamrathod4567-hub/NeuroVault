@@ -83,8 +83,8 @@ router.post('/action', async (req, res) => {
     const answer = await chatCompletion({ messages: [{ role: 'user', content: prompts[action] }] });
     res.json({ answer });
   } catch (err) {
-    console.error('[chat/action] Error:', err.message);
-    res.status(500).json({ error: 'AI is currently unavailable.' });
+    console.error('[chat/action] Error:', err);
+    res.status(500).json({ error: err.message || 'AI is currently unavailable.' });
   }
 });
 
@@ -108,8 +108,8 @@ router.post('/inline', async (req, res) => {
     const answer = await chatCompletion({ messages: [{ role: 'user', content: prompts[action] }] });
     res.json({ answer });
   } catch (err) {
-    console.error('[chat/inline] Error:', err.message);
-    res.status(500).json({ error: 'AI is currently unavailable.' });
+    console.error('[chat/inline] Error:', err);
+    res.status(500).json({ error: err.message || 'AI is currently unavailable.' });
   }
 });
 
