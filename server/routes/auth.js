@@ -103,6 +103,9 @@ router.post('/login', (req, res) => {
       { expiresIn: '7d' }
     );
 
+    // Update last_login timestamp
+    db.prepare('UPDATE users SET last_login = datetime(\'now\') WHERE id = ?').run(user.id);
+
     res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
   } catch (err) {
     console.error(err);
@@ -122,6 +125,20 @@ router.get('/me', (req, res) => {
     res.json({ user: { id: decoded.id, username: decoded.username, email: decoded.email } });
   } catch {
     res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// DELETE /api/auth/profile - Delete user account and all data (cascades)
+const authenticate = require('../middleware/authenticate');
+router.delete('/profile', authenticate, (req, res) => {
+  try {
+    const userId = req.user.id;
+    // Notes are deleted automatically due to ON DELETE CASCADE
+    db.prepare('DELETE FROM users WHERE id = ?').run(userId);
+    res.json({ message: 'Account and all data deleted successfully' });
+  } catch (err) {
+    console.error('[Auth] Account deletion error:', err.message);
+    res.status(500).json({ error: 'Failed to delete account' });
   }
 });
 
