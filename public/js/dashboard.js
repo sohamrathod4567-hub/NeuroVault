@@ -278,19 +278,15 @@ function renderNotesList(notes) {
 
   notes.forEach(note => {
     const el = document.createElement('div');
-    el.className = `note-item${note.id === activeNoteId ? ' active' : ''}`;
+    const previewText = note.content ? escHtml(stripMarkdown(note.content)) : 'No content';
+    const favClass = note.is_favorite ? ' is-favorite' : '';
+
+    el.className = `note-item${note.id === activeNoteId ? ' active' : ''}${favClass}`;
     el.dataset.id = note.id;
     el.onclick = () => openNote(note.id);
 
-    // Show similarity score badge if present (semantic search results)
-    const scoreBadge = (note.similarity !== undefined)
-      ? `<span class="similarity-badge">${Math.round(note.similarity * 100)}%</span>`
-      : '';
-
-    const icon = getTagIcon(note.tag);
-    const previewText = note.content ? escHtml(stripMarkdown(note.content)) : 'No content';
-
     el.innerHTML = `
+      <div class="note-item-fav">⭐</div>
       <div class="note-item-header">
         <span class="note-icon">${icon}</span>
         <div class="note-item-title"><span>${escHtml(note.title || 'Untitled Note')}</span>${scoreBadge}</div>
@@ -308,12 +304,12 @@ function renderTagFilters() {
   const container = document.getElementById('tag-filters');
   if (!container) return;
 
-  const tags = ['all', 'idea', 'research', 'todo', 'document'];
+  const tags = ['all', 'idea', 'research', 'todo', 'document', 'favorites'];
   container.innerHTML = tags.map(tag => `
     <button class="tag-filter-btn${tag === currentTagFilter ? ' active' : ''}" 
             data-tag="${tag}" 
             onclick="filterByTag('${tag}')">
-      ${tag.charAt(0).toUpperCase() + tag.slice(1)}
+      ${tag === 'favorites' ? '⭐ Favorites' : tag.charAt(0).toUpperCase() + tag.slice(1)}
     </button>
   `).join('');
 }
@@ -332,7 +328,9 @@ function filterByTag(tag) {
 
 function applyFilters() {
   let filtered = allNotes;
-  if (currentTagFilter !== 'all') {
+  if (currentTagFilter === 'favorites') {
+    filtered = filtered.filter(n => n.is_favorite === 1);
+  } else if (currentTagFilter !== 'all') {
     filtered = filtered.filter(n => n.tag === currentTagFilter);
   }
 
@@ -465,6 +463,11 @@ function openNote(id) {
 
   updateEditorMeta(note);
   updateWordCount();
+  
+  // Update favorite toggle UI
+  const favBtn = document.getElementById('favorite-toggle-btn');
+  if (favBtn) favBtn.classList.toggle('active', note.is_favorite === 1);
+  
   markSaved();
 }
 
