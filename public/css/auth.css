@@ -68,6 +68,15 @@
   margin-bottom: var(--space-8);
 }
 
+.auth-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: var(--space-8);
+}
+
 .auth-logo {
   display: flex;
   flex-direction: column;
