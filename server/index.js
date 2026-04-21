@@ -34,7 +34,7 @@ app.use('/api/chat',   chatRoutes);
 app.use('/api/documents', documentsRoutes);
 
 // API 404 Guarding
-app.use('/api/*', (req, res) => {
+app.use('/api/{*path}', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
