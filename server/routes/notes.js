@@ -203,20 +203,23 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/notes/:id
-router.delete('/:id', (req, res) => {
+// PATCH /api/notes/:id/favorite — toggle favorite status
+router.patch('/:id/favorite', (req, res) => {
   const { id } = req.params;
   try {
     const existing = db.prepare(
-      'SELECT * FROM notes WHERE id = ? AND user_id = ?'
+      'SELECT is_favorite FROM notes WHERE id = ? AND user_id = ?'
     ).get(id, req.user.id);
+
     if (!existing) return res.status(404).json({ error: 'Note not found' });
 
-    db.prepare('DELETE FROM notes WHERE id = ? AND user_id = ?').run(id, req.user.id);
-    res.json({ message: 'Note deleted successfully' });
+    const nextVal = existing.is_favorite ? 0 : 1;
+    db.prepare('UPDATE notes SET is_favorite = ? WHERE id = ? AND user_id = ?').run(nextVal, id, req.user.id);
+
+    res.json({ id, is_favorite: nextVal });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to delete note' });
+    console.error('[notes] PATCH /favorite error:', err.message);
+    res.status(500).json({ error: 'Failed to toggle favorite status' });
   }
 });
 
