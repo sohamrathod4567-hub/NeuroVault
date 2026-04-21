@@ -1360,3 +1360,73 @@ document.addEventListener('keydown', (e) => {
     insertFormat('h3');
   }
 }, true); // capture phase so it fires before the global Ctrl+S
+
+/* ================================
+   NEW UTILITY FUNCTIONS
+   ================================ */
+
+/**
+ * Toggles favorite status for the currently active note
+ */
+async function toggleActiveNoteFavorite() {
+  if (!activeNoteId) return;
+  
+  const favBtn = document.getElementById('favorite-toggle-btn');
+  const isCurrentlyFav = favBtn && favBtn.classList.contains('active');
+  
+  const nt = showToast(isCurrentlyFav ? 'Removing from favorites...' : 'Adding to favorites...', 'loading', 0);
+  
+  try {
+    const data = await apiFetch(`/api/notes/${activeNoteId}/favorite`, {
+      method: 'PATCH'
+    });
+    
+    // Update local state
+    const idx = allNotes.findIndex(n => n.id === activeNoteId);
+    if (idx !== -1) {
+      allNotes[idx].is_favorite = data.is_favorite;
+    }
+    
+    // Update UI
+    if (favBtn) favBtn.classList.toggle('active', data.is_favorite === 1);
+    
+    // Refresh list and keep editor open
+    applyFilters();
+    updateToast(nt, data.is_favorite ? 'Added to favorites ⭐' : 'Removed from favorites', 'success');
+  } catch (err) {
+    updateToast(nt, err.message, 'error');
+  }
+}
+
+/**
+ * Deletes the user account after confirmation
+ */
+async function handleAccountDeletion() {
+  const confirmed = confirm('DANGER: This will permanently delete your account and all your notes. This cannot be undone. Proceed?');
+  if (!confirmed) return;
+  
+  const dt = showToast('Deleting account...', 'loading', 0);
+  try {
+    await apiFetch('/api/auth/profile', { method: 'DELETE' });
+    updateToast(dt, 'Account deleted. Redirecting...', 'success');
+    
+    setTimeout(() => {
+      localStorage.clear();
+      window.location.href = '/';
+    }, 1500);
+  } catch (err) {
+    updateToast(dt, err.message, 'error');
+  }
+}
+
+/**
+ * Interface with chat.js to clear session history
+ */
+function clearChatMessages() {
+  if (confirm('Clear current chat history?')) {
+    if (typeof clearChat === 'function') {
+      clearChat();
+      showToast('Chat history cleared', 'info');
+    }
+  }
+}
