@@ -170,6 +170,7 @@ function initGreeting() {
   }
 }
 
+/* Initialize the user avatar badge */
 function initUserBadge() {
   const nameEl   = document.getElementById('user-name');
   const avatarEl = document.getElementById('user-avatar');
