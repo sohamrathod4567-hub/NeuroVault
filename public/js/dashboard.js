@@ -154,6 +154,7 @@ function initResizers() {
   resizerR.addEventListener('mousedown', (e) => startResize(e, 'right'));
 }
 
+/* Initialize user greeting based on time of day */
 function initGreeting() {
   const nameEl = document.getElementById('home-name');
   if (nameEl && user) {
