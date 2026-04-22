@@ -75,6 +75,7 @@ function switchView(view) {
   }
 }
 
+/* Update the count of indexed notes */
 function updateNoteCount() {
   const count = typeof allNotes !== 'undefined' ? allNotes.length : 0;
   const el = document.getElementById('chat-note-count');
