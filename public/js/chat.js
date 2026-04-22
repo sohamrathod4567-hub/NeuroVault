@@ -86,6 +86,7 @@ function updateNoteCount() {
 /* ================================
    SUGGESTED QUESTIONS
    ================================ */
+/* Render suggested AI questions based on notes */
 function renderSuggestedQuestions() {
   const container = document.getElementById('suggested-questions');
   if (!container || typeof allNotes === 'undefined') return;
