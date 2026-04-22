@@ -12,6 +12,7 @@ let abortController = null;
 /* ================================
    VIEW SWITCHER
    ================================ */
+/* Switch between notes and chat views */
 function switchView(view) {
   currentView = view;
 
