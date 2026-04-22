@@ -181,6 +181,7 @@ function initUserBadge() {
 /* ================================
    API HELPERS
    ================================ */
+/* Helper wrapper for API fetch calls with auth */
 async function apiFetch(path, options = {}) {
   const res = await fetch(path, {
     ...options,
