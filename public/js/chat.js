@@ -123,6 +123,7 @@ function useSuggestedQuestion(q) {
 /* ================================
    CHAT SUBMIT (STREAMING)
    ================================ */
+/* Handle enter key for chat submission */
 function handleChatKeydown(e) {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
