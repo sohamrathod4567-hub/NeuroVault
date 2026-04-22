@@ -131,6 +131,7 @@ function handleChatKeydown(e) {
   }
 }
 
+/* Submit chat message and handle streaming response */
 async function submitChat(retryText = null) {
   if (isChatLoading) return;
   const input    = document.getElementById('chat-input');
