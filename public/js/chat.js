@@ -327,6 +327,7 @@ function appendMessage({ role, content, sources, error, id, timestamp, retryText
   autoScroll();
 }
 
+/* Update the AI streaming bubble content */
 function updateStreamingBubble(id, content) {
   const bubble = document.getElementById(`bubble_${id}`);
   if (!bubble) return;
