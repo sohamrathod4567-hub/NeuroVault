@@ -102,6 +102,7 @@ function toggleSidebar() {
   }
 }
 
+/* Initialize resizable panels */
 function initResizers() {
   const layout = document.querySelector('.dashboard-layout');
   const resizerL = document.getElementById('resizer-left');
