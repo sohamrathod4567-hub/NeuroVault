@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+/* Toggle the sidebar open or closed */
 function toggleSidebar() {
   sidebarOpen = !sidebarOpen;
   const layout = document.querySelector('.dashboard-layout');
