@@ -110,6 +110,7 @@ function renderSuggestedQuestions() {
   ).join('');
 }
 
+/* Populate input with selected question */
 function useSuggestedQuestion(q) {
   const input = document.getElementById('chat-input');
   if (input) {
