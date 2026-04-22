@@ -411,6 +411,7 @@ function renderSourceChip(s) {
     </div>`;
 }
 
+/* Auto scroll to bottom of chat messages */
 function autoScroll() {
   const container = document.getElementById('chat-messages');
   const threshold = 150;
