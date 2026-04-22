@@ -336,6 +336,7 @@ function updateStreamingBubble(id, content) {
   autoScroll();
 }
 
+/* Finalize AI bubble and add action buttons */
 function finalizeStreamingBubble(id, content) {
   const wrap = document.getElementById(id);
   const bubble = document.getElementById(`bubble_${id}`);
