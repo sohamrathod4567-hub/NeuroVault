@@ -58,6 +58,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email or username already in use' });
     }
 
+    // Hash the user's password before storing
     const hashedPassword = bcrypt.hashSync(password, 10);
     const result = db.prepare(
       'INSERT INTO users (username, email, password) VALUES (?, ?, ?)'
