@@ -75,8 +75,9 @@ function switchView(view) {
   }
 }
 
-/* Update the count of indexed notes */
+/* Update the count of indexed notes in the UI */
 function updateNoteCount() {
+  // Count the number of notes if allNotes is defined
   const count = typeof allNotes !== 'undefined' ? allNotes.length : 0;
   const el = document.getElementById('chat-note-count');
   if (el) el.textContent = `${count} note${count !== 1 ? 's' : ''} indexed`;
