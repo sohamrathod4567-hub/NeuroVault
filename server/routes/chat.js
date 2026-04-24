@@ -15,7 +15,8 @@ router.use(authenticate);
  * ONLY the plain-text delta to the browser, so the client never sees JSON.
  */
 router.post('/', async (req, res) => {
-  const { question, history = [], topK = 5, stream = false } = req.body;
+    // Extract parameters from the request body
+    const { question, history = [], topK = 5, stream = false } = req.body;
 
   if (!question || !question.trim()) {
     return res.status(400).json({ error: 'Question is required' });
