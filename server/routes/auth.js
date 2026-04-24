@@ -52,6 +52,7 @@ router.post('/register', async (req, res) => {
   }
 
   try {
+    // Check if the user already exists by email or username
     const existingUser = db.prepare('SELECT id FROM users WHERE email = ? OR username = ?').get(email, username);
     if (existingUser) {
       return res.status(400).json({ error: 'Email or username already in use' });
