@@ -111,10 +111,11 @@ function renderSuggestedQuestions() {
   ).join('');
 }
 
-/* Populate input with selected question */
+/* Populate input with selected question and trigger resize */
 function useSuggestedQuestion(q) {
   const input = document.getElementById('chat-input');
   if (input) {
+    // Set the input value to the suggested question
     input.value = q;
     autoresizeTextarea(input);
     input.focus();
