@@ -37,6 +37,7 @@ function showToast(message, type = 'info', duration = 3000) {
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   
+  // Map toast types to their respective icons/spinners
   const icon = {
     success: '✓',
     error: '✕',
