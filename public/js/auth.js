@@ -3,7 +3,7 @@
    ================================ */
 'use strict';
 
-// Redirect to dashboard if already logged in
+// Immediately redirect to dashboard if already logged in to prevent showing the auth page
 (function() {
   const token = localStorage.getItem('nv_token');
   if (token) window.location.href = '/dashboard.html';
