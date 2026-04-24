@@ -10,6 +10,7 @@ function authenticate(req, res, next) {
 
   const token = authHeader.split(' ')[1];
   try {
+    // Verify the JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
