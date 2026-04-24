@@ -18,6 +18,7 @@ router.post('/', async (req, res) => {
     // Extract parameters from the request body
     const { question, history = [], topK = 5, stream = false } = req.body;
 
+  // Validate that a question is provided
   if (!question || !question.trim()) {
     return res.status(400).json({ error: 'Question is required' });
   }
