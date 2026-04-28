@@ -110,7 +110,7 @@ router.post('/login', (req, res) => {
 
     res.json({ token, user: { id: user.id, username: user.username, email: user.email } });
   } catch (err) {
-    console.error(err);
+    console.error('[Auth] Login error:', err.message);
     res.status(500).json({ error: 'Server error during login' });
   }
 });
