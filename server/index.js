@@ -27,10 +27,10 @@ app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // API Routes
-app.use('/api/auth',   authRoutes);
-app.use('/api/notes',  notesRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/notes', notesRoutes);
 app.use('/api/search', searchRoutes);
-app.use('/api/chat',   chatRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/documents', documentsRoutes);
 
 // API 404 Guarding
