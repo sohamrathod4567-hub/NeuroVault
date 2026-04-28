@@ -75,7 +75,7 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ token, user: { id: result.lastInsertRowid, username, email } });
   } catch (err) {
-    console.error(err);
+    console.error('[Auth] Registration error:', err.message);
     res.status(500).json({ error: 'Server error during registration' });
   }
 });
