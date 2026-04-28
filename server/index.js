@@ -6,10 +6,10 @@ const path = require('path');
 const compression = require('compression');
 const helmet = require('helmet');
 
-const authRoutes  = require('./routes/auth');
+const authRoutes = require('./routes/auth');
 const notesRoutes = require('./routes/notes');
 const searchRoutes = require('./routes/search');
-const chatRoutes  = require('./routes/chat');
+const chatRoutes = require('./routes/chat');
 const documentsRoutes = require('./routes/documents');
 
 const app = express();
