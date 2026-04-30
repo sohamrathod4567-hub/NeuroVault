@@ -61,6 +61,7 @@ body.resizing .dashboard-layout {
   font-size: var(--text-xs);
   box-shadow: none;
   color: var(--bg-base);
+  font-weight: 300;
 }
 
 .topbar-brand .brand-name {
@@ -96,13 +97,13 @@ body.resizing .dashboard-layout {
   display: grid;
   place-items: center;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 300;
   color: white;
 }
 
 .user-name {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -262,7 +263,7 @@ body.resizing .dashboard-layout {
   padding: 2px var(--space-2);
   border-radius: var(--radius-sm);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 300;
   color: var(--text-secondary);
   background: transparent;
   transition: all var(--transition-fast);
@@ -286,6 +287,7 @@ body.resizing .dashboard-layout {
 .note-count-badge {
   font-size: 11px;
   color: var(--text-muted);
+  font-weight: 300;
 }
 
 /* Notes list */
@@ -357,7 +359,7 @@ body.resizing .dashboard-layout {
 
 .similarity-badge {
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 300;
   padding: 1px 6px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
@@ -374,6 +376,7 @@ body.resizing .dashboard-layout {
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin-bottom: var(--space-1);
+  font-weight: 300;
 }
 
 .note-item-meta {
@@ -385,13 +388,14 @@ body.resizing .dashboard-layout {
 
 .note-tag {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 300;
   color: var(--text-secondary);
 }
 
 .note-date {
   font-size: 10px;
   color: var(--text-muted);
+  font-weight: 300;
 }
 
 /* ---- MAIN CONTENT ---- */
@@ -493,6 +497,7 @@ body.resizing .dashboard-layout {
 .action-text p {
   font-size: 12px;
   color: var(--text-secondary);
+  font-weight: 300;
 }
 
 /* Recent Activity */
@@ -506,7 +511,6 @@ body.resizing .dashboard-layout {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-2);
@@ -567,6 +571,7 @@ body.resizing .dashboard-layout {
 .recent-card-meta {
   font-size: 11px;
   color: var(--text-muted);
+  font-weight: 300;
 }
 
 /* Note Editor */
@@ -614,7 +619,7 @@ body.resizing .dashboard-layout {
   padding: 0 var(--space-2);
   border-radius: var(--radius-sm);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 300;
   color: var(--text-secondary);
   background: transparent;
   transition: all var(--transition-fast);
@@ -634,7 +639,7 @@ body.resizing .dashboard-layout {
 
 .toolbar-btn .tb-label {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 300;
   font-family: var(--font-mono);
   letter-spacing: -0.01em;
 }
@@ -898,7 +903,7 @@ body.resizing .dashboard-layout {
   top: var(--space-2);
   right: var(--space-3);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 300;
   color: var(--text-muted);
   font-family: var(--font-mono);
   letter-spacing: 0.1em;
@@ -937,6 +942,7 @@ body.resizing .dashboard-layout {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  font-weight: 300;
 }
 
 .save-indicator.saved { color: var(--success); }
@@ -950,6 +956,7 @@ body.resizing .dashboard-layout {
 .editor-hint {
   font-size: 11px;
   color: var(--text-muted);
+  font-weight: 300;
 }
 
 .editor-hint kbd {
@@ -960,6 +967,7 @@ body.resizing .dashboard-layout {
   font-family: var(--font-mono);
   font-size: 11px;
   border-bottom: 2px solid rgba(0,0,0,0.3);
+  font-weight: 300;
 }
 
 
@@ -1032,11 +1040,12 @@ body.resizing .dashboard-layout {
   align-items: center;
   font-size: var(--text-xs);
   color: var(--text-secondary);
+  font-weight: 300;
 }
 
 .meta-row span:last-child {
   color: var(--text-primary);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .tag-select-full {
@@ -1047,11 +1056,12 @@ body.resizing .dashboard-layout {
   font-size: var(--text-xs);
   padding: var(--space-2);
   width: 100%;
+  font-weight: 300;
 }
 
 .status-badge {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 300;
   padding: 2px var(--space-2);
   border-radius: var(--radius-full);
 }
@@ -1152,7 +1162,7 @@ body.resizing .dashboard-layout {
 
 .cmd-item-title {
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .cmd-item-shortcut {
@@ -1160,6 +1170,7 @@ body.resizing .dashboard-layout {
   color: var(--text-muted);
   opacity: 0;
   transition: opacity 0.2s;
+  font-weight: 300;
 }
 
 .cmd-item:hover, .cmd-item.selected {
@@ -1187,6 +1198,7 @@ body.resizing .dashboard-layout {
   gap: var(--space-4);
   font-size: 11px;
   color: var(--text-muted);
+  font-weight: 300;
 }
 
 .cmd-hints kbd {
@@ -1217,7 +1229,7 @@ body.resizing .dashboard-layout {
   color: var(--text-secondary);
   border: none;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -1266,7 +1278,7 @@ body.resizing .dashboard-layout {
   border-radius: var(--radius-sm);
   padding: 6px 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 300;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -1282,7 +1294,7 @@ body.resizing .dashboard-layout {
   border-radius: var(--radius-sm);
   padding: 6px 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 300;
   cursor: pointer;
   transition: all var(--transition-fast);
 }
@@ -1362,6 +1374,7 @@ body.resizing .dashboard-layout {
   display: flex;
   align-items: center;
   gap: 4px;
+  font-weight: 300;
 }
 
 .msg-action-btn:hover {
@@ -1383,6 +1396,7 @@ body.resizing .dashboard-layout {
   border-radius: var(--radius-md);
   z-index: 100;
   transition: all var(--transition-fast);
+  font-weight: 300;
 }
 
 .chat-clear-btn:hover {
