@@ -7,34 +7,34 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Colors - Brand System (Slate & Indigo) */
-  --bg-base: #030712;      /* Slate 950 */
-  --bg-surface: #0F172A;   /* Slate 900 */
-  --bg-elevated: #1E293B;  /* Slate 800 */
-  --bg-hover: #334155;     /* Slate 700 */
+  /* Colors - Strict Minimal Palette */
+  --bg-base: #000000;
+  --bg-surface: #111111;
+  --bg-elevated: #1A1A1A;
+  --bg-hover: #2A2A2A;
   
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-subtle: #2A2A2A;
+  --border-strong: #2A2A2A;
 
-  --text-primary: #F8FAFC;   /* Slate 50 */
-  --text-secondary: #94A3B8; /* Slate 400 */
-  --text-muted: #64748B;    /* Slate 500 */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --text-muted: #6B6B6B;
 
-  --color-primary: #818CF8;       /* Indigo 400 - more vibrant */
-  --color-primary-hover: #6366F1; /* Indigo 500 */
-  --color-primary-dim: rgba(129, 140, 248, 0.12);
-  --color-accent: #38BDF8;
+  --color-primary: #E5E5E5;
+  --color-primary-hover: #FFFFFF;
+  --color-primary-dim: #2A2A2A;
+  --color-accent: #E5E5E5;
 
-  --glass-bg: rgba(15, 23, 42, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass-bg: #111111;
+  --glass-border: #2A2A2A;
+  --glass-glow: none;
 
-  --gradient-brand: linear-gradient(135deg, #818CF8 0%, #38BDF8 100%);
-  --glow-primary: 0 0 25px rgba(129, 140, 248, 0.4);
+  --gradient-brand: none;
+  --glow-primary: none;
 
-  --success: #10B981;
-  --error: #EF4444;
-  --warning: #F59E0B;
+  --success: #E5E5E5;
+  --error: #E5E5E5;
+  --warning: #E5E5E5;
 
   /* Typography - Precise Scale */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -69,11 +69,11 @@
   --radius-2xl: 24px;
   --radius-full: 9999px;
 
-  /* Shadows - Layered & Premium */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Shadows - Monochrome */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
 
   /* Layout */
   --sidebar-width: 280px;
@@ -202,14 +202,14 @@ input, textarea {
 /* Primary: Main action */
 .btn-primary {
   background: var(--color-primary);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  color: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  box-shadow: none;
 }
 
 .btn-primary:hover {
   background: var(--color-primary-hover);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  box-shadow: none;
   transform: translate3d(0, -1px, 0);
 }
 
@@ -248,35 +248,30 @@ input, textarea {
   border-color: var(--text-secondary);
 }
 
-/* Danger: Destructive actions */
+/* Danger: Destructive actions (mapped to minimal palette) */
 .btn-danger {
-  background: rgba(239, 68, 68, 0.1);
-  color: #F87171;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
 }
 
 .btn-danger:hover {
-  background: var(--error);
-  color: white;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  box-shadow: none;
 }
 
 /* Skeleton Loading Component */
+/* Skeleton Loading Component */
 .skeleton-loader {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.03) 25%,
-    rgba(255, 255, 255, 0.06) 37%,
-    rgba(255, 255, 255, 0.03) 63%
-  );
-  background-size: 400% 100%;
-  animation: skeleton-shimmer 1.4s ease infinite;
+  background: var(--bg-hover);
+  animation: skeleton-shimmer 1.4s ease-in-out infinite alternate;
   border-radius: var(--radius-sm);
 }
 
 @keyframes skeleton-shimmer {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
 /* Form inputs - Standardized */
