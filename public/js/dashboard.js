@@ -11,6 +11,8 @@ let searchDebounceTimer = null;
 let isSemanticSearch = false;
 let currentTagFilter = 'all';
 
+const API_BASE_URL = (window.location.protocol === 'file:' || window.location.port === '5500') ? 'http://localhost:3000' : '';
+
 // ---- Auth guard ----
 const token = localStorage.getItem('nv_token');
 const userRaw = localStorage.getItem('nv_user');
@@ -35,7 +37,7 @@ if (uploadPdfBtn && pdfFileInput) {
 
     const loadingToast = showToast('Uploading and processing PDF...', 'loading', 0);
     try {
-      const res = await fetch(`/api/documents/upload`, {
+      const res = await fetch(`${API_BASE_URL}/api/documents/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -179,7 +181,9 @@ function initUserBadge() {
    ================================ */
 /* Helper wrapper for API fetch calls with auth */
 async function apiFetch(path, options = {}) {
-  const res = await fetch(path, {
+  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+  try {
+    const res = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
