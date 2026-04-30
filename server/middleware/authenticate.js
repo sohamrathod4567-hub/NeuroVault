@@ -2,21 +2,9 @@
 const jwt = require('jsonwebtoken');
 
 function authenticate(req, res, next) {
-  // Check if the Authorization header is present and valid
-  const authHeader = req.headers['authorization'];
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-
-  const token = authHeader.split(' ')[1];
-  try {
-    // Verify the JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
+  // Bypass authentication and use a default user
+  req.user = { id: 1, username: 'Local User', email: 'local@example.com' };
+  next();
 }
 
 module.exports = authenticate;
