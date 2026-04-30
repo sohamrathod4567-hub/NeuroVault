@@ -169,7 +169,7 @@ async function submitChat(retryText = null) {
     const token = localStorage.getItem('nv_token');
     abortController = new AbortController();
     
-    const response = await fetch('/api/chat', {
+    const response = await fetch(`${API_BASE_URL}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -521,7 +521,8 @@ function autoresizeTextarea(el) {
 
 async function chatFetch(path, body) {
   const token = localStorage.getItem('nv_token');
-  const res = await fetch(path, {
+  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
