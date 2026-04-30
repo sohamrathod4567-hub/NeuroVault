@@ -60,12 +60,8 @@ if (uploadPdfBtn && pdfFileInput) {
   });
 }
 
-// Ensure token exists completely
-if (!token || !userRaw) {
-  window.location.href = '/';
-}
-
-const user = JSON.parse(userRaw);
+// Provide a default dummy user to bypass auth
+const user = { username: 'Local User', email: 'local@example.com' };
 
 // ---- Init ----
 let sidebarOpen = true;
