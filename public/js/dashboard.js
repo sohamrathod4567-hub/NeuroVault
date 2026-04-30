@@ -236,8 +236,11 @@ async function loadNotes() {
   } catch (err) {
     if (list) {
       list.innerHTML = `
-        <div class="empty-sidebar error-state" style="padding: var(--space-4); text-align: center;">
-          <div class="empty-icon" style="margin-bottom: var(--space-2);">⚠️</div>
+        <div class="empty-sidebar error-state" style="padding: var(--space-4); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: var(--space-3);">
+          <div class="empty-icon" style="font-size: 18px; color: var(--text-muted); line-height: 1;">⚠️</div>
+          <p style="color: var(--text-primary); font-size: 13px; font-weight: 400; margin: 0;">Connection Interrupted</p>
+          <button class="btn btn-subtle" onclick="loadNotes()" style="height: 32px; padding: 0 var(--space-3); font-size: 11px;">Retry</button>
+        </div>
           <p style="color: var(--error); margin-bottom: var(--space-2); font-weight: 600;">Connection Interrupted</p>
           <button class="btn btn-secondary" onclick="loadNotes()" style="margin: 0 auto;">Retry Connection</button>
         </div>`;
