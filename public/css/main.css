@@ -99,8 +99,8 @@
 html { scroll-behavior: smooth; }
 
 ::selection {
-  background: var(--color-primary);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+  color: inherit;
 }
 
 body {
@@ -114,6 +114,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   animation: pageFadeIn 0.5s ease-out forwards;
+  
+  /* Prevent accidental text selection globally */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Allow text selection only in intentional content areas */
+input,
+textarea,
+[contenteditable="true"],
+.prose,
+.message-bubble,
+.note-content-input,
+.chat-input,
+.source-snippet {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 @keyframes pageFadeIn {
