@@ -4,7 +4,7 @@
 /* =====================
    CSS CUSTOM PROPERTIES
    ===================== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   /* Colors - Strict Minimal Palette */
@@ -44,9 +44,9 @@
   --text-sm: 0.875rem;   /* 14px */
   --text-base: 1rem;     /* 16px */
   --text-lg: 1.125rem;   /* 18px */
-  --text-xl: 1.5rem;     /* 24px */
-  --text-2xl: 1.875rem;  /* 30px */
-  --text-3xl: 2.25rem;   /* 36px */
+  --text-xl: 1.5rem;     /* 24px (H3) */
+  --text-2xl: 1.875rem;  /* 30px (H2) */
+  --text-3xl: 2.5rem;    /* 40px (H1) */
 
   /* Spacing Scale - Strict 8px Grid */
   --space-1: 0.25rem;  /* 4px (micro) */
@@ -105,10 +105,11 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-sans);
+  font-weight: 400;
   background: var(--bg-base);
   color: var(--text-primary);
-  font-size: var(--text-sm);
-  line-height: 1.5;
+  font-size: var(--text-base);
+  line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -179,7 +180,7 @@ input, textarea {
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   transition: all var(--transition-fast);
   white-space: nowrap;
   user-select: none;
@@ -284,7 +285,7 @@ input, textarea {
 
 .form-label {
   font-size: var(--text-xs);
-  font-weight: 600;
+  font-weight: 300;
   color: var(--text-secondary);
   letter-spacing: 0.02em;
 }
@@ -323,6 +324,7 @@ input, textarea {
   font-size: 11px;
   color: var(--error);
   margin-top: var(--space-1);
+  font-weight: 300;
 }
 
 /* Cards - Standardized */
@@ -389,7 +391,7 @@ input, textarea {
   box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.03);
   color: var(--text-primary);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   animation: toastSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   transition: all var(--transition);
 }
@@ -407,6 +409,7 @@ input, textarea {
   border-radius: var(--radius-full);
   flex-shrink: 0;
   font-size: 11px;
+  font-weight: 300;
 }
 
 /* Variants */
