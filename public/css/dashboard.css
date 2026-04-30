@@ -132,9 +132,7 @@ body.resizing .dashboard-layout {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: rgba(24, 24, 27, 0.4);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: var(--bg-base);
   z-index: 5;
 }
 
@@ -165,7 +163,7 @@ body.resizing .dashboard-layout {
 }
 
 .sidebar-header {
-  padding: var(--space-3);
+  padding: var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -177,7 +175,8 @@ body.resizing .dashboard-layout {
 
 .sidebar-actions .btn {
   flex: 1;
-  padding: var(--space-2) var(--space-3);
+  height: 36px;
+  padding: 0 var(--space-3);
   font-size: 13px;
 }
 
@@ -195,12 +194,13 @@ body.resizing .dashboard-layout {
   color: var(--text-primary);
   font-size: 13px;
   width: 100%;
+  height: 36px;
   transition: all var(--transition-fast);
 }
 
 .search-input-animated:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-dim);
+  box-shadow: none;
   background: var(--bg-surface);
 }
 
@@ -220,7 +220,7 @@ body.resizing .dashboard-layout {
 }
 
 .sidebar-section {
-  padding: var(--space-3);
+  padding: var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -234,7 +234,7 @@ body.resizing .dashboard-layout {
 }
 
 .section-header {
-  padding: var(--space-3) var(--space-3) var(--space-1);
+  padding: var(--space-4) var(--space-4) var(--space-2);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -256,7 +256,7 @@ body.resizing .dashboard-layout {
 .tag-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .tag-filter-btn {
@@ -268,6 +268,7 @@ body.resizing .dashboard-layout {
   background: transparent;
   transition: all var(--transition-fast);
   user-select: none;
+  border: 1px solid transparent;
 }
 
 .tag-filter-btn:hover {
@@ -280,8 +281,9 @@ body.resizing .dashboard-layout {
 }
 
 .tag-filter-btn.active {
-  background: var(--color-primary-dim);
-  color: var(--color-primary);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
 }
 
 .note-count-badge {
@@ -294,7 +296,7 @@ body.resizing .dashboard-layout {
 .notes-list {
   flex: 1;
   overflow-y: auto;
-  padding: 0 var(--space-2) var(--space-3) var(--space-2);
+  padding: 0 var(--space-4) var(--space-4) var(--space-4);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -977,7 +979,7 @@ body.resizing .dashboard-layout {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  background: var(--bg-surface);
+  background: var(--bg-base);
   z-index: 5;
 }
 
