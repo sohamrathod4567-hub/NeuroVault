@@ -68,12 +68,12 @@ router.get('/graph', (req, res) => {
       const content = sourceNote.content || '';
       // Regex for [[Title]]
       const matches = content.match(/\[\[(.*?)\]\]/g);
-      
+
       if (matches) {
         matches.forEach(m => {
           const targetTitle = m.slice(2, -2).trim().toLowerCase();
           const targetId = titleToId.get(targetTitle);
-          
+
           if (targetId && targetId !== String(sourceNote.id)) {
             // Avoid duplicates
             if (!links.some(l => l.source === String(sourceNote.id) && l.target === targetId)) {
@@ -87,7 +87,7 @@ router.get('/graph', (req, res) => {
         });
       }
     });
-
+    //This is the comment for one extra commit
     res.json({ nodes, links });
   } catch (err) {
     console.error('[notes] GET /graph error:', err.message);
@@ -112,12 +112,12 @@ router.get('/:id', (req, res) => {
 // POST /api/notes — create a new note + auto-generate embedding
 router.post('/', async (req, res) => {
   const { title, content, tag } = req.body;
-  const rawTitle   = typeof title === 'string' ? title : '';
+  const rawTitle = typeof title === 'string' ? title : '';
   const rawContent = typeof content === 'string' ? content : '';
-  
-  const noteTitle   = rawTitle.trim();
+
+  const noteTitle = rawTitle.trim();
   const noteContent = rawContent.trim();
-  const noteTag     = (tag || 'general').trim();
+  const noteTag = (tag || 'general').trim();
 
   if (!noteTitle && !noteContent) {
     return res.status(400).json({ error: 'Note must have a title or content (cannot be empty)' });
@@ -159,9 +159,9 @@ router.put('/:id', async (req, res) => {
     ).get(id, req.user.id);
     if (!existing) return res.status(404).json({ error: 'Note not found' });
 
-    const newTitle   = (title ?? existing.title).trim();
+    const newTitle = (title ?? existing.title).trim();
     const newContent = (content ?? existing.content).trim();
-    const newTag     = (tag ?? existing.tag).trim();
+    const newTag = (tag ?? existing.tag).trim();
 
     if (!newTitle && !newContent) {
       return res.status(400).json({ error: 'Note must have a title or content' });
