@@ -9,7 +9,7 @@
     "backup": "mkdir data\\backups 2>nul & copy data\\neurovault.db data\\backups\\neurovault_backup.db"
   },
   "keywords": ["ai", "knowledge-base", "markdown", "semantic-search", "rag"],
-  "author": "",
+  "author": "NeuroVault Team",
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
