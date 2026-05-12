@@ -57,3 +57,4 @@ if (!columnsUsers.includes('last_login')) {
 }
 
 module.exports = db;
+// Commit 1
