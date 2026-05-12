@@ -73,13 +73,6 @@ const db = require('./db');
     process.exit(0);
   });
 });
-// Incremental update 1
-// Incremental update 2
-// Incremental update 3
-// Incremental update 4
-// Incremental update 5
-// Incremental update 6
-// Incremental update 7
 // Incremental update 8
 // Incremental update 9
 // Incremental update 10
